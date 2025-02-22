@@ -1,0 +1,30 @@
+{
+  "project_info": {
+    "project_number": "723415955770",
+    "firebase_url": "https://ieltsapp-1-default-rtdb.firebaseio.com",
+    "project_id": "ieltsapp-1",
+    "storage_bucket": "ieltsapp-1.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:723415955770:android:53ee74552ad97980bdf803",
+        "android_client_info": {
+          "package_name": "com.example.support"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyCrHa2PxyCC0F6tH7dtlgInHHF5_3b2CWI"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}

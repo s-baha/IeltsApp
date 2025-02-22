@@ -1,0 +1,10 @@
+<resources>
+    <string name="app_name">IELTS-APP</string>
+    <string name="login">Login</string>
+    <string name="email">Email</string>
+    <string name="username">Username</string>
+    <string name="password">Password</string>
+    <string name="register">Registration</string>
+    <string name="no_account_login">Don’t have an account ?  Registration page</string>
+    <string name="no_account_register">Don’t have an account ?  Login page</string>
+</resources>
