@@ -49,11 +49,6 @@ class ThirdGameViewModel @Inject constructor(
     private val _isCorrectAnswer = mutableStateOf<Boolean?>(null)
     val isCorrectAnswer: State<Boolean?> = _isCorrectAnswer
 
-    private val _lisCorrectAnswer = mutableStateOf<Boolean?>(null)
-    val lisCorrectAnswer: State<Boolean?> = _lisCorrectAnswer
-
-
-
     // Initialize the ViewModel
     init {
         viewModelScope.launch {
