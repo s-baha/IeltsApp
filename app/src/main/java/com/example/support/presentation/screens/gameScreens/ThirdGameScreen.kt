@@ -1,8 +1,5 @@
 package com.example.support.presentation.screens.gameScreens
 
-import android.content.Context
-import android.service.autofill.OnClickAction
-import android.widget.Toast
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Box
@@ -16,6 +13,7 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.shape.RoundedCornerShape
+//noinspection UsingMaterialAndMaterial3Libraries
 import androidx.compose.material.Button
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.SnackbarHost
@@ -35,7 +33,6 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.hilt.navigation.compose.hiltViewModel
 import com.example.support.domain.entity.ThirdGame
-import com.example.support.presentation.screens.viewmodel.gameViewModels.SecondGameViewModel
 import com.example.support.presentation.screens.viewmodel.gameViewModels.ThirdGameViewModel
 import com.example.support.presentation.ui.component.UserStatsPanel
 
@@ -185,6 +182,7 @@ fun extractWordsAndPhrases(text: String, answers: List<String>): List<String> {
             }
         }
     }
+
 
     return wordsAndPhrases
 }

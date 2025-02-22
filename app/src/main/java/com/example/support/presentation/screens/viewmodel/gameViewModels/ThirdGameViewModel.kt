@@ -49,6 +49,9 @@ class ThirdGameViewModel @Inject constructor(
     private val _isCorrectAnswer = mutableStateOf<Boolean?>(null)
     val isCorrectAnswer: State<Boolean?> = _isCorrectAnswer
 
+    private val _lisCorrectAnswer = mutableStateOf<Boolean?>(null)
+    val lisCorrectAnswer: State<Boolean?> = _lisCorrectAnswer
+
 
 
     // Initialize the ViewModel
@@ -97,6 +100,7 @@ class ThirdGameViewModel @Inject constructor(
                 _isCorrectAnswer.value = null // Сбрасываем цвет
                 loadRandomSentence()
             }
+            //bahaaaaaaaaaaaa
         } else {
             // ❌ Если есть ошибки – окрашиваем в красный
             _isCorrectAnswer.value = false
