@@ -2,6 +2,7 @@ package com.example.support.presentation.screens.gameScreens
 
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
+import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.ExperimentalLayoutApi
@@ -15,6 +16,7 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.shape.RoundedCornerShape
 //noinspection UsingMaterialAndMaterial3Libraries
 import androidx.compose.material.Button
+import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.SnackbarHost
 import androidx.compose.material3.SnackbarHostState
@@ -33,12 +35,18 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.hilt.navigation.compose.hiltViewModel
 import com.example.support.domain.entity.ThirdGame
+import com.example.support.presentation.navigation.Screen
+import com.example.support.presentation.screens.viewmodel.gameViewModels.SecondGameViewModel
 import com.example.support.presentation.screens.viewmodel.gameViewModels.ThirdGameViewModel
 import com.example.support.presentation.ui.component.UserStatsPanel
 
 
 @Composable
-fun ThirdGameScreen(viewModel: ThirdGameViewModel = hiltViewModel()) {
+fun ThirdGameScreen(
+    viewModel: ThirdGameViewModel = hiltViewModel(),
+    onNavigateTo: (Screen) ->Unit,
+    onExitGame: () -> Unit)
+{
     ThirdGameScreenContent(viewModel)
 }
 
@@ -46,6 +54,7 @@ fun ThirdGameScreen(viewModel: ThirdGameViewModel = hiltViewModel()) {
 fun ThirdGameScreenContent(viewModel: ThirdGameViewModel) {
     val user = viewModel.user.value?.username ?: "Unknown"
     val score = viewModel.score.value
+    val rank = viewModel.rank.value
     val snackBarHostState = remember { SnackbarHostState() }
     val sentence by viewModel.sentence.collectAsState()
     val context = LocalContext.current
@@ -76,7 +85,7 @@ fun ThirdGameScreenContent(viewModel: ThirdGameViewModel) {
 
                 ) {
                 // user panel
-                UserStatsPanel(user, score)
+                UserStatsPanel(user, score, rank)
                 // name of the game
                 GameTexts("Choose Keywords")
                 Spacer(modifier = Modifier.fillMaxHeight(0.02f))
@@ -104,7 +113,13 @@ fun ChooseKeywords(viewModel: ThirdGameViewModel, sentence: ThirdGame?, onClick:
         contentAlignment = Alignment.Center
     ) {
         sentence?.let {
-            Column(modifier = Modifier.fillMaxSize().padding(16.dp)) {
+            Column(
+                verticalArrangement = Arrangement.SpaceBetween,
+                horizontalAlignment = Alignment.CenterHorizontally,
+                modifier = Modifier
+                    .fillMaxSize()
+                    .padding(vertical = 16.dp, horizontal = 30.dp)
+            ) {
 
                 Spacer(modifier = Modifier.height(16.dp))
 
@@ -129,20 +144,30 @@ fun ChooseKeywords(viewModel: ThirdGameViewModel, sentence: ThirdGame?, onClick:
                                     }
                                 )
                                 .clickable { viewModel.selectWord(phrase) }
-                                .padding(vertical = 8.dp, horizontal = 4.dp),
+                                .padding(vertical = 8.dp, horizontal = 3.dp),
                             fontSize = 16.sp,
-                            color = Color.Black
+                            color = Color.White
                         )
                     }
                 }
 
 
-
+                androidx.compose.material3.Button(
+                    onClick = onClick,
+                    modifier = Modifier
+                        .padding(8.dp),
+                    colors = ButtonDefaults.buttonColors(
+                        containerColor = Color(0xFFE6D8F8),
+                        contentColor = Color.Black
+                    )
+                ) {
+                    Text(
+                        text = "Check",
+                    )
+                }
             }
         }
-        Button(onClick =onClick){
-            Text(text = "Check")
-        }
+
     }
 }
 

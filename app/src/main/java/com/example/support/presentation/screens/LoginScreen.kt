@@ -46,7 +46,8 @@ import com.example.support.util.Result
 
 @Composable
 fun LoginScreen(
-    onNavigateTo: (String) ->Unit
+    onNavigateTo: (String) ->Unit,
+    onExitGame: () -> Unit
 ){
     val viewModel= hiltViewModel<LoginScreenViewModel>()
 

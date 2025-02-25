@@ -48,7 +48,8 @@ import com.example.support.util.Result
 
 @Composable
 fun RegisterScreen(
-    onNavigateTo: (String) ->Unit
+    onNavigateTo: (String) ->Unit,
+    onExitGame: () -> Unit
 ){
     val viewModel= hiltViewModel<RegisterScreenViewModel>()
     val context = LocalContext.current

@@ -59,6 +59,7 @@ fun FillInTheBlankPage(viewModel: FirstGameViewModel = hiltViewModel(), onExitGa
     val question = viewModel.currentQuestion.value
     val userAnswer = viewModel.userAnswer.value
     val user = viewModel.user.value?.username.toString()
+    val rank = viewModel.rank.value
     val score = viewModel.score.value
     val errorMessage = viewModel.errorMessage.value
     val snackBarHostState = remember { SnackbarHostState() }
@@ -96,7 +97,7 @@ fun FillInTheBlankPage(viewModel: FirstGameViewModel = hiltViewModel(), onExitGa
                 )
                 {
                     // user stats
-                    UserStatsPanel(user, score)
+                    UserStatsPanel(user, score,rank)
                     BackHandler {
                         onExitGame() // Вернуться в MainMenuScreen
                     }

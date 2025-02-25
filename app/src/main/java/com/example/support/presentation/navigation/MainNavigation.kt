@@ -18,6 +18,7 @@ import com.example.support.presentation.screens.ProfileScreen
 import com.example.support.presentation.screens.RatingScreen
 import com.example.support.presentation.screens.RegisterScreen
 import com.example.support.presentation.screens.gameScreens.SecondGameScreen
+import com.example.support.presentation.screens.gameScreens.ThirdGameScreen
 import com.example.support.presentation.screens.viewmodel.AuthViewModel
 import com.example.support.presentation.ui.component.BottomNavBar
 
@@ -31,6 +32,8 @@ sealed class Screen(val route: String, val title: String) {
     data object FirstGame : Screen("first_game", "First Game")
     @Serializable
     data object SecondGame : Screen("second_game", "Second Game")
+    @Serializable
+    data object ThirdGame : Screen("third_game", "Third Game")
     @Serializable
     data object MainMenu : Screen("main_menu", "Main Menu")
     @Serializable
@@ -60,6 +63,11 @@ fun MainNav(
                     navHostController.navigate(navigateTo) {
                         popUpTo(Screen.Login.route) { inclusive = true }
                     }
+                },
+                onExitGame = {
+                    navHostController.navigate(Screen.MainMenu.route) {
+                        popUpTo(Screen.ThirdGame.route) { inclusive = true }
+                    }
                 }
             )
         }
@@ -68,6 +76,11 @@ fun MainNav(
                 onNavigateTo = { navigateTo ->
                     navHostController.navigate(navigateTo) {
                         popUpTo(Screen.Register.route) { inclusive = true }
+                    }
+                },
+                onExitGame = {
+                    navHostController.navigate(Screen.MainMenu.route) {
+                        popUpTo(Screen.ThirdGame.route) { inclusive = true }
                     }
                 }
             )
@@ -96,6 +109,18 @@ fun MainNav(
                 }
             )
         }
+        composable(Screen.ThirdGame.route) {
+            ThirdGameScreen(
+                onNavigateTo = { navigateTo ->
+                    navHostController.navigate(navigateTo)
+                },
+                onExitGame = {
+                    navHostController.navigate(Screen.MainMenu.route) {
+                        popUpTo(Screen.ThirdGame.route) { inclusive = true }
+                    }
+                }
+            )
+        }
         composable(Screen.MainMenu.route) {
             MainMenuScreen(
                 onNavigateTo = { navigateTo ->
@@ -114,9 +139,14 @@ fun MainNav(
         }
         composable(Screen.Rating.route) {
             RatingScreen(
-//                onNavigateTo = { navigateTo ->
-//                    navHostController.navigate(navigateTo)
-//                }
+                onNavigateTo = { navigateTo ->
+                    navHostController.navigate(navigateTo)
+                },
+                onExitGame = {
+                    navHostController.navigate(Screen.MainMenu.route) {
+                        popUpTo(Screen.ThirdGame.route) { inclusive = true }
+                    }
+                }
             )
         }
 

@@ -12,6 +12,7 @@ import kotlinx.coroutines.launch
 import javax.inject.Inject
 import androidx.compose.runtime.*
 import com.example.support.data.repository.AuthRepository
+import com.example.support.data.repository.RatingRepository
 import com.example.support.domain.entity.User
 import com.google.firebase.database.DatabaseReference
 import dagger.hilt.android.lifecycle.HiltViewModel
@@ -21,7 +22,8 @@ import kotlinx.coroutines.tasks.await
 class FirstGameViewModel @Inject constructor(
     private val authRepository: AuthRepository,
     private val repository: FirstGameRepository,
-    private val database: DatabaseReference
+    private val database: DatabaseReference,
+    private val ratingRepository: RatingRepository
 ):ViewModel()  {
 
     private val _user = mutableStateOf<User?>(null)
@@ -35,6 +37,9 @@ class FirstGameViewModel @Inject constructor(
 
     private val _score = mutableIntStateOf(0)
     val score: State<Int> = _score
+
+    private val _rank = mutableIntStateOf(0)
+    val rank: State<Int> = _rank
 
     private val _errorMessage = mutableStateOf<String?>(null)
     val errorMessage: State<String?> = _errorMessage
@@ -65,6 +70,7 @@ class FirstGameViewModel @Inject constructor(
                 val user = snapshot.getValue(User::class.java)
                     _user.value = user
                     _score.intValue = user?.score ?: 0
+                    _rank.intValue = user?.rank ?: 0
             }
     }
 
@@ -104,7 +110,18 @@ class FirstGameViewModel @Inject constructor(
         val newScore = (_score.intValue + 10)
 
         database.child("users").child(userId).updateChildren(mapOf("score" to newScore))
+            .addOnSuccessListener {
+                updateUserRanks()
+            }
         _score.intValue = newScore
+    }
+    private fun updateUserRanks() {
+        viewModelScope.launch {
+            ratingRepository.updateUserRanks()
+            val userId = authRepository.getLoggedInUserId() ?: return@launch
+            val updatedUser = ratingRepository.getUser(userId)
+            _rank.intValue = updatedUser?.rank ?: _rank.intValue
+        }
     }
 
     // Clears the error message

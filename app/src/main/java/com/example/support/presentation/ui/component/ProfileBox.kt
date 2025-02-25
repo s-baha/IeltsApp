@@ -36,7 +36,8 @@ import com.example.support.presentation.ui.component.UserStatsPanel
 @Composable
 fun ProfileBox(
     username:String,
-    score: Int
+    score: Int,
+    rank: Int
 ){
     Box(
         modifier = Modifier
@@ -77,7 +78,7 @@ fun ProfileBox(
             ) {
                 Column {
                     Text("Ranking")
-                    HowPoints(0)
+                    HowPoints(rank)
                 }
                 Column {
                     Text("Points")

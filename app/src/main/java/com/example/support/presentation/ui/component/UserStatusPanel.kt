@@ -27,7 +27,8 @@ import com.example.support.R
 @Composable
 fun UserStatsPanel(
     username:String,
-    score: Int
+    score: Int,
+    rank: Int
 ){
     Box(
         modifier = Modifier
@@ -72,7 +73,7 @@ fun UserStatsPanel(
             ) {
                 Column {
                     Text("Ranking")
-                    HowPoints(0)
+                    HowPoints(rank)
                 }
                 Column {
                     Text("Points")

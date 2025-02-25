@@ -27,6 +27,9 @@ class MainMenuViewModel @Inject constructor(
     private val _score = mutableIntStateOf(0)
     val score: State<Int> = _score
 
+    private val _rank = mutableIntStateOf(0)
+    val rank: State<Int> = _rank
+
     private val _errorMessage = mutableStateOf<String?>(null)
     val errorMessage: State<String?> = _errorMessage
 
@@ -46,6 +49,7 @@ class MainMenuViewModel @Inject constructor(
                     val user = snapshot.getValue(User::class.java)
                     _user.value = user
                     _score.intValue = user?.score ?: 0
+                    _rank.intValue = user?.rank ?: 0
                 }
 
                 override fun onCancelled(error: DatabaseError) {

@@ -6,7 +6,8 @@ data class User(
     val email: String = "",
     val username: String = "",
     val password: String = "",
-    val score: Int = 0
+    val score: Int = 0,
+    val rank: Int = 0
 )
 
 

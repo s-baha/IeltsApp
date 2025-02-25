@@ -45,6 +45,7 @@ fun MainPage(
 ){
     val user = viewModel.user.value?.username.toString()
     val score = viewModel.score.value
+    val rank = viewModel.rank.value
 
 
     Column(
@@ -64,7 +65,7 @@ fun MainPage(
         ) {
             Column(
             ) {
-                ProfileBox(user, score)
+                ProfileBox(user, score,rank)
                 RowGames()
                 LazyRow(
                     horizontalArrangement = Arrangement.SpaceBetween,
@@ -72,7 +73,8 @@ fun MainPage(
                 ) {
                     val games = listOf(
                         "Fact Or Opinions" to Screen.SecondGame.route,
-                        "Phrasal Verbs" to Screen.FirstGame.route
+                        "Phrasal Verbs" to Screen.FirstGame.route,
+                        "Choose Keywords" to Screen.ThirdGame.route
                     )
 
                     items(games) { (gameName, route) ->
@@ -86,6 +88,12 @@ fun MainPage(
                     onNavigateTo(Screen.Login.route)
                 }) {
                     Text("Log out")
+                }
+
+                Button(onClick = {
+                    onNavigateTo(Screen.Rating.route)
+                }) {
+                    Text("rating")
                 }
 
             }

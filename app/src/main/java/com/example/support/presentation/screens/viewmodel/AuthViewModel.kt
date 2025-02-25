@@ -26,17 +26,6 @@ class AuthViewModel @Inject constructor(
         _isUserLoggedIn.value = authRepository.getCurrentUser() != null
     }
 
-    fun login(email: String, password: String, callback: (Boolean, String) -> Unit) {
-        viewModelScope.launch {
-            authRepository.login(email, password) { success, message ->
-                if (success) {
-                    _isUserLoggedIn.value = true
-                }
-                callback(success, message)
-            }
-        }
-    }
-
     fun logout() {
         authRepository.logout()
         _isUserLoggedIn.value = false

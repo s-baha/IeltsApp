@@ -51,6 +51,7 @@ fun SecondGameScreenContent(viewModel: SecondGameViewModel) {
     val question = viewModel.currentQuestion.value
     val user = viewModel.user.value?.username ?: "Unknown"
     val score = viewModel.score.value
+    val rank = viewModel.rank.value
     val errorMessage = viewModel.errorMessage.value
     val snackBarHostState = remember { SnackbarHostState() }
 
@@ -80,7 +81,7 @@ fun SecondGameScreenContent(viewModel: SecondGameViewModel) {
 
             ) {
                 //user panel
-                UserStatsPanel(user, score)
+                UserStatsPanel(user, score , rank)
                 //
                 GameTexts("Fact or Opinion")
                 Spacer(modifier = Modifier.fillMaxHeight(0.02f))
