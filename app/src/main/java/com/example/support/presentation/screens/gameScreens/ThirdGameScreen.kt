@@ -44,22 +44,20 @@ fun ThirdGameScreen(viewModel: ThirdGameViewModel = hiltViewModel()) {
 
 @Composable
 fun ThirdGameScreenContent(viewModel: ThirdGameViewModel) {
-
     val user = viewModel.user.value?.username ?: "Unknown"
     val score = viewModel.score.value
     val snackBarHostState = remember { SnackbarHostState() }
     val sentence by viewModel.sentence.collectAsState()
-    val selectedWords by viewModel.selectedWords.collectAsState()
     val context = LocalContext.current
 
     LaunchedEffect(viewModel.errorMessage.value) {
         viewModel.errorMessage.value?.let {
             snackBarHostState.showSnackbar(it)
-            viewModel.clearErrorMessage() // Очищаем ошибку после показа
+            viewModel.clearErrorMessage() // clear error message after showing
         }
     }
     LaunchedEffect(Unit) {
-        viewModel.loadRandomSentence() // Загружаем предложение при открытии
+        viewModel.loadRandomSentence() // load a random sentence when the screen is opened
     }
     Box(
         modifier = Modifier
@@ -77,14 +75,13 @@ fun ThirdGameScreenContent(viewModel: ThirdGameViewModel) {
                 horizontalAlignment = Alignment.CenterHorizontally,
 
                 ) {
-                //user panel
+                // user panel
                 UserStatsPanel(user, score)
-                //
+                // name of the game
                 GameTexts("Choose Keywords")
                 Spacer(modifier = Modifier.fillMaxHeight(0.02f))
-
+                // box with the game
                 ChooseKeywords(viewModel, sentence){viewModel.checkAnswer(context)}
-
             }
         }
     }
@@ -95,9 +92,9 @@ fun ThirdGameScreenContent(viewModel: ThirdGameViewModel) {
 @Composable
 fun ChooseKeywords(viewModel: ThirdGameViewModel, sentence: ThirdGame?, onClick: () -> Unit) {
     val selectedWords by viewModel.selectedWords.collectAsState()
-   val selectedCount = selectedWords.size
-    val correctAnswerCount = sentence?.answers?.size ?: 0
     val isChecked = viewModel.isChecked.value
+    val checkedWords by viewModel.checkedWords.collectAsState()
+
     Box(
         modifier = Modifier
             .fillMaxWidth(0.95f)
@@ -113,10 +110,8 @@ fun ChooseKeywords(viewModel: ThirdGameViewModel, sentence: ThirdGame?, onClick:
 
                 FlowRow {
                     val wordsAndPhrases = extractWordsAndPhrases(it.text, it.answers)
-
                     wordsAndPhrases.forEach { phrase ->
                         val isSelected = selectedWords.contains(phrase)
-                        val isCorrect = viewModel.isCorrectWord(phrase)
 
                         Text(
                             text = phrase,
@@ -124,11 +119,13 @@ fun ChooseKeywords(viewModel: ThirdGameViewModel, sentence: ThirdGame?, onClick:
                                 .clip(RoundedCornerShape(16.dp))
                                 .background(
                                     when {
-                                        isChecked && selectedCount == correctAnswerCount && selectedWords.all { viewModel.isCorrectWord(it) } -> Color.Green // Все правильно
-                                        !isChecked && isSelected -> Color.LightGray // Пока не нажали "Check", выделенные слова серые
-                                        isChecked && selectedCount == correctAnswerCount && selectedWords.all { viewModel.isCorrectWord(it) } -> Color.Green // Все правильно
-                                        isChecked && isSelected && !isCorrect -> Color.Red // Ошибочные слова красные
-                                        else -> Color(0xFF595D99) // Обычный цвет
+                                        // check if the word is correct
+                                        checkedWords?.containsKey(phrase) == true -> {
+                                            if (checkedWords?.get(phrase) == true) Color.Green else Color.Red
+                                        }
+                                        // check if the word is selected
+                                        !isChecked && isSelected -> Color.LightGray
+                                        else -> Color(0xFF595D99)
                                     }
                                 )
                                 .clickable { viewModel.selectWord(phrase) }
@@ -146,9 +143,6 @@ fun ChooseKeywords(viewModel: ThirdGameViewModel, sentence: ThirdGame?, onClick:
         Button(onClick =onClick){
             Text(text = "Check")
         }
-
-
-
     }
 }
 
@@ -156,33 +150,33 @@ fun extractWordsAndPhrases(text: String, answers: List<String>): List<String> {
     val wordsAndPhrases = mutableListOf<String>()
     var remainingText = text
 
-    // Сортируем `answers` по убыванию длины (чтобы сначала искать длинные фразы)
+    // sort answers by descending length (so that we search for longer phrases first)
     val sortedAnswers = answers.sortedByDescending { it.length }
 
     while (remainingText.isNotEmpty()) {
         var found = false
 
+        // for each answer, check if it is a prefix of the remaining text
         for (answer in sortedAnswers) {
             if (remainingText.startsWith(answer)) {
-                wordsAndPhrases.add(answer)
-                remainingText = remainingText.removePrefix(answer).trim()
+                wordsAndPhrases.add(answer) // add the answer to the list
+                remainingText = remainingText.removePrefix(answer).trim() // remove the answer from the remaining text
                 found = true
                 break
             }
         }
-
+        // if no answer was found, add the first word to the list
         if (!found) {
-            val firstSpace = remainingText.indexOf(" ")
+            val firstSpace = remainingText.indexOf(" ") // find the first space in the remaining text
             if (firstSpace != -1) {
-                wordsAndPhrases.add(remainingText.substring(0, firstSpace))
-                remainingText = remainingText.substring(firstSpace).trim()
+                wordsAndPhrases.add(remainingText.substring(0, firstSpace)) // add the first word
+                remainingText = remainingText.substring(firstSpace).trim() // remove the first word
             } else {
-                wordsAndPhrases.add(remainingText)
+                wordsAndPhrases.add(remainingText) // add the remaining text
                 break
             }
         }
     }
-
 
     return wordsAndPhrases
 }
