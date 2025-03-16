@@ -1,4 +1,4 @@
-package com.example.support.presentation.screens
+package com.example.support.presentation.screens.authScreens
 
 import android.widget.Toast
 import androidx.compose.foundation.background
@@ -13,9 +13,8 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.twotone.AccountCircle
+import androidx.compose.material.icons.outlined.Lock
 import androidx.compose.material.icons.twotone.Email
-import androidx.compose.material.icons.twotone.Lock
 import androidx.compose.material3.Icon
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Text
@@ -38,31 +37,31 @@ import androidx.compose.ui.unit.sp
 import androidx.hilt.navigation.compose.hiltViewModel
 import com.example.support.R
 import com.example.support.presentation.navigation.Screen
-import com.example.support.presentation.screens.state.RegisterScreenEvent
-import com.example.support.presentation.screens.state.RegisterScreenState
-import com.example.support.presentation.screens.viewmodel.RegisterScreenViewModel
+import com.example.support.presentation.screens.state.LoginScreenEvent
+import com.example.support.presentation.screens.state.LoginScreenState
+import com.example.support.presentation.screens.viewModels.authViewModels.LoginScreenViewModel
 import com.example.support.presentation.ui.component.MenuTop
 import com.example.support.presentation.ui.component.StyledButton
 import com.example.support.util.Result
 
-
 @Composable
-fun RegisterScreen(
+fun LoginScreen(
     onNavigateTo: (String) ->Unit,
     onExitGame: () -> Unit
 ){
-    val viewModel= hiltViewModel<RegisterScreenViewModel>()
+    val viewModel= hiltViewModel<LoginScreenViewModel>()
+
     val context = LocalContext.current
-    LaunchedEffect(viewModel.state.registerResult) {
-        viewModel.state.registerResult?.let { registerResult ->
-            when (registerResult) {
+    LaunchedEffect(viewModel.state.loginResult) {
+        viewModel.state.loginResult?.let { loginResult ->
+            when (loginResult) {
                 is Result.Success<*> -> {
                     onNavigateTo(Screen.MainMenu.route)
                 }
                 is Result.Failure<*> -> {
                     Toast.makeText(
                         context,
-                        registerResult.msq,
+                        loginResult.msq,
                         Toast.LENGTH_LONG
                     ).show()
                 }
@@ -70,20 +69,20 @@ fun RegisterScreen(
         }
     }
 
-    RegisterView(
+
+    LoginView(
         state = viewModel.state,
         onEvent = viewModel::onEvent,
-        onNavigateTo=onNavigateTo
+        onNavigateTo = onNavigateTo
     )
 }
 
-
 @Composable
-fun RegisterView(
-    state: RegisterScreenState=RegisterScreenState(),
-    onEvent: (RegisterScreenEvent)->Unit = {},
+fun LoginView(
+    state: LoginScreenState = LoginScreenState(),
+    onEvent: (LoginScreenEvent) ->Unit={},
     onNavigateTo: (String) -> Unit={}
-) {
+){
     val keyboardController = LocalSoftwareKeyboardController.current
     // hide keyboard when touch
     Box(
@@ -120,112 +119,87 @@ fun RegisterView(
                 .background(
                     brush = Brush.linearGradient(
                         listOf(
-                            Color(-0x767014),  // 0%
-                            Color(-0x767014),  // 58%
-                            Color(-0xa6a267) // 100%
-                        )
+                            Color(-0x767014),
+                            Color(-0x767014),
+                            Color(-0xa6a267)                         )
                     )
                 )
 
-        ) {
+        ){
             Column(
                 modifier = Modifier
                     .fillMaxSize()
                     .padding(top = 40.dp),
                 horizontalAlignment = Alignment.CenterHorizontally,
-            ) {
-                //title "Register"
-                Text(
-                    stringResource(
-                        id = R.string.register
-                    ),
+            ){
+                //title "Login"
+                Text(stringResource(
+                    id= R.string.login),
                     fontSize = 40.sp,
                     fontWeight = FontWeight.W400,
                     color = Color.White
                 )
-                // register username text field
+
+                //login email text field
                 OutlinedTextField(
-                    value = state.username,
-                    onValueChange = {
-                     onEvent(RegisterScreenEvent.UsernameUpdated(it))
-                    },
-                    placeholder = {
-                        Text(text = stringResource(id=R.string.username), color = Color.White)
-                    },
-                    leadingIcon ={
-                        Icon(
-                            painter = rememberVectorPainter(image = Icons.TwoTone.AccountCircle),
-                            contentDescription = null
-                        )
-                    },
-                    modifier = Modifier
-                        .padding(top = 30.dp)
-                        .clip(shape = RoundedCornerShape(30.dp))
-                        .background(color = Color(0xFF6B70B4))
-                )
-                //register email text field
-                OutlinedTextField(
-                    value = state.email,
-                    onValueChange = {
-                        onEvent(RegisterScreenEvent.EmailUpdated(it))
-                    },
+                value = state.email,
+                onValueChange = {
+                    onEvent(LoginScreenEvent.EmailUpdated(it))
+                },
                     placeholder = {
                         Text(text = stringResource(id=R.string.email), color = Color.White)
                     },
-                    leadingIcon ={
-                        Icon(
-                            painter = rememberVectorPainter(image = Icons.TwoTone.Email),
-                            contentDescription = null
-                        )
-                    },
-                    modifier = Modifier
-                        .padding(top = 30.dp)
-                        .clip(shape = RoundedCornerShape(30.dp))
-                        .background(color = Color(0xFF6B70B4))
+                leadingIcon ={
+                Icon(
+                    painter = rememberVectorPainter(image = Icons.TwoTone.Email),
+                    contentDescription = null
+                )
+                },
+                modifier = Modifier
+                    .padding(top = 50.dp)
+                    .clip(shape = RoundedCornerShape(30.dp))
+                    .background(color = Color(0xFF6B70B4))
                 )
 
-                //register password text field
+                //login password text field
                 OutlinedTextField(
                     value = state.password,
                     onValueChange = {
-                        onEvent(RegisterScreenEvent.PasswordUpdated(it))
+                        onEvent(LoginScreenEvent.PasswordUpdated(it))
                     },
                     placeholder = {
                         Text(text = stringResource(id=R.string.password), color = Color.White)
                     },
                     leadingIcon ={
                         Icon(
-                            painter = rememberVectorPainter(image = Icons.TwoTone.Lock),
+                            painter = rememberVectorPainter(image = Icons.Outlined.Lock),
                             contentDescription = null
                         )
                     },
                     visualTransformation = PasswordVisualTransformation(),
                     modifier = Modifier
-                        .padding(top = 30.dp)
+                        .padding(top = 20.dp)
                         .clip(shape = RoundedCornerShape(30.dp))
                         .background(color = Color(0xFF6B70B4))
                 )
-
-
-                //button for register
+                //button for login
                 StyledButton(
-                    modifier = Modifier.padding(top = 45.dp),
-                    onClick = {onEvent(RegisterScreenEvent.RegisterButtonClicked) }
-                ) {
+                    modifier = Modifier.padding(top = 120.dp),
+                    onClick = { onEvent(LoginScreenEvent.LoginButtonClicked)}){
                     Text(
-                        text = stringResource(id = R.string.register),
+                        text = stringResource(id=R.string.login),
                         color = Color.Black,
                         fontSize = 20.sp
                     )
                 }
-                //go to login page
+                //go to register page
                 Text(
-                    text = stringResource(id = R.string.no_account_register),
+                    text = stringResource(id = R.string.no_account_login),
                     color = Color.White,
                     modifier = Modifier
                         .padding(top = 25.dp)
                         .clickable {
-                            onNavigateTo(Screen.Login.route)
+                            onNavigateTo(Screen.Register.route)
                         }
                 )
             }

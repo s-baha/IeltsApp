@@ -1,4 +1,4 @@
-package com.example.support.presentation.screens.viewmodel
+package com.example.support.presentation.screens.viewModels
 
 import androidx.compose.runtime.State
 import androidx.compose.runtime.mutableIntStateOf

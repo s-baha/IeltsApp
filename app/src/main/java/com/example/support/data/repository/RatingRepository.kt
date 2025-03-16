@@ -17,12 +17,15 @@ class RatingRepository @Inject constructor(
             snapshot.children.mapNotNull { child ->
                 val user = child.getValue(User::class.java)
                 user?.copy(id = child.key ?: "")
-            }.filter { it.score != null } // Фильтруем `null`
+            }.filter { it.score != null && it.score!! >= 0 } // Исключаем `null` и отрицательные значения
                 .sortedByDescending { it.score }
-        } catch (e: Exception) {
+
+        }catch (e: Exception) {
+            Log.e("RatingRepository", "Error fetching users: ${e.message}")
             emptyList()
         }
     }
+
 
     suspend fun updateUserRanks() {
         withContext(Dispatchers.IO) {

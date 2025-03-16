@@ -1,5 +1,6 @@
 package com.example.support.presentation.screens.gameScreens
 
+import android.os.CountDownTimer
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
@@ -7,25 +8,24 @@ import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.ExperimentalLayoutApi
 import androidx.compose.foundation.layout.FlowRow
+import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
-import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.shape.RoundedCornerShape
-//noinspection UsingMaterialAndMaterial3Libraries
-import androidx.compose.material.Button
+import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
-import androidx.compose.material3.Scaffold
-import androidx.compose.material3.SnackbarHost
 import androidx.compose.material3.SnackbarHostState
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
@@ -36,28 +36,32 @@ import androidx.compose.ui.unit.sp
 import androidx.hilt.navigation.compose.hiltViewModel
 import com.example.support.domain.entity.ThirdGame
 import com.example.support.presentation.navigation.Screen
-import com.example.support.presentation.screens.viewmodel.gameViewModels.SecondGameViewModel
-import com.example.support.presentation.screens.viewmodel.gameViewModels.ThirdGameViewModel
+import com.example.support.presentation.screens.viewModels.gameViewModels.ThirdGameViewModel
 import com.example.support.presentation.ui.component.UserStatsPanel
-
-
 @Composable
 fun ThirdGameScreen(
     viewModel: ThirdGameViewModel = hiltViewModel(),
-    onNavigateTo: (Screen) ->Unit,
+    onNavigateTo: (String) ->Unit,
     onExitGame: () -> Unit)
 {
-    ThirdGameScreenContent(viewModel)
+    ThirdGameScreenContent(viewModel,onNavigateTo)
 }
 
 @Composable
-fun ThirdGameScreenContent(viewModel: ThirdGameViewModel) {
+fun ThirdGameScreenContent(viewModel: ThirdGameViewModel,onNavigateTo: (String) -> Unit) {
     val user = viewModel.user.value?.username ?: "Unknown"
     val score = viewModel.score.value
     val rank = viewModel.rank.value
     val snackBarHostState = remember { SnackbarHostState() }
     val sentence by viewModel.sentence.collectAsState()
-    val context = LocalContext.current
+
+
+    val timeLeft by viewModel.timeLeft.collectAsState()
+    var showDialog by remember { mutableStateOf(false) }
+
+    LaunchedEffect(key1 = viewModel) {
+        viewModel.startTimer{ showDialog=true }
+    }
 
     LaunchedEffect(viewModel.errorMessage.value) {
         viewModel.errorMessage.value?.let {
@@ -73,14 +77,11 @@ fun ThirdGameScreenContent(viewModel: ThirdGameViewModel) {
             .fillMaxSize()
             .background(color = Color(0xFF4B4E78))
     ) {
-        Scaffold(
-            snackbarHost = { SnackbarHost(hostState = snackBarHostState) }
-        ) { contentPadding ->
             Column(
                 modifier = Modifier
                     .fillMaxSize()
                     .background(color = Color(0xFF4B4E78))
-                    .padding(contentPadding),
+                    .padding(),
                 horizontalAlignment = Alignment.CenterHorizontally,
 
                 ) {
@@ -88,21 +89,24 @@ fun ThirdGameScreenContent(viewModel: ThirdGameViewModel) {
                 UserStatsPanel(user, score, rank)
                 // name of the game
                 GameTexts("Choose Keywords")
+                // space between name and timer
+                Spacer(modifier = Modifier.fillMaxHeight(0.02f))
+                CircularTimer(timeLeft)
                 Spacer(modifier = Modifier.fillMaxHeight(0.02f))
                 // box with the game
-                ChooseKeywords(viewModel, sentence){viewModel.checkAnswer(context)}
+                ChooseKeywords(viewModel, sentence,onNavigateTo)
             }
-        }
     }
 }
 
 
 @OptIn(ExperimentalLayoutApi::class)
 @Composable
-fun ChooseKeywords(viewModel: ThirdGameViewModel, sentence: ThirdGame?, onClick: () -> Unit) {
+fun ChooseKeywords(viewModel: ThirdGameViewModel, sentence: ThirdGame?,onNavigateTo: (String) -> Unit) {
     val selectedWords by viewModel.selectedWords.collectAsState()
     val isChecked = viewModel.isChecked.value
     val checkedWords by viewModel.checkedWords.collectAsState()
+    val context = LocalContext.current
 
     Box(
         modifier = Modifier
@@ -114,17 +118,16 @@ fun ChooseKeywords(viewModel: ThirdGameViewModel, sentence: ThirdGame?, onClick:
     ) {
         sentence?.let {
             Column(
-                verticalArrangement = Arrangement.SpaceBetween,
+                verticalArrangement = Arrangement.Center,
                 horizontalAlignment = Alignment.CenterHorizontally,
                 modifier = Modifier
                     .fillMaxSize()
-                    .padding(vertical = 16.dp, horizontal = 30.dp)
+                    .padding(vertical = 10.dp, horizontal = 30.dp)
             ) {
 
-                Spacer(modifier = Modifier.height(16.dp))
 
                 FlowRow {
-                    val wordsAndPhrases = extractWordsAndPhrases(it.text, it.answers)
+                    val wordsAndPhrases = viewModel.extractWordsAndPhrases(it.text, it.answers)
                     wordsAndPhrases.forEach { phrase ->
                         val isSelected = selectedWords.contains(phrase)
 
@@ -151,57 +154,35 @@ fun ChooseKeywords(viewModel: ThirdGameViewModel, sentence: ThirdGame?, onClick:
                     }
                 }
 
-
-                androidx.compose.material3.Button(
-                    onClick = onClick,
-                    modifier = Modifier
-                        .padding(8.dp),
-                    colors = ButtonDefaults.buttonColors(
-                        containerColor = Color(0xFFE6D8F8),
-                        contentColor = Color.Black
-                    )
-                ) {
-                    Text(
-                        text = "Check",
-                    )
-                }
-            }
-        }
-
-    }
-}
-
-fun extractWordsAndPhrases(text: String, answers: List<String>): List<String> {
-    val wordsAndPhrases = mutableListOf<String>()
-    var remainingText = text
-
-    // sort answers by descending length (so that we search for longer phrases first)
-    val sortedAnswers = answers.sortedByDescending { it.length }
-
-    while (remainingText.isNotEmpty()) {
-        var found = false
-
-        // for each answer, check if it is a prefix of the remaining text
-        for (answer in sortedAnswers) {
-            if (remainingText.startsWith(answer)) {
-                wordsAndPhrases.add(answer) // add the answer to the list
-                remainingText = remainingText.removePrefix(answer).trim() // remove the answer from the remaining text
-                found = true
-                break
-            }
-        }
-        // if no answer was found, add the first word to the list
-        if (!found) {
-            val firstSpace = remainingText.indexOf(" ") // find the first space in the remaining text
-            if (firstSpace != -1) {
-                wordsAndPhrases.add(remainingText.substring(0, firstSpace)) // add the first word
-                remainingText = remainingText.substring(firstSpace).trim() // remove the first word
-            } else {
-                wordsAndPhrases.add(remainingText) // add the remaining text
-                break
             }
         }
     }
+    Row (
+        horizontalArrangement = Arrangement.Center,
+        modifier = Modifier.fillMaxWidth()
+    ) {
 
-    return wordsAndPhrases
+        Button(
+            onClick = { onNavigateTo(Screen.MainMenu.route)},
+            modifier = Modifier
+                .padding(8.dp),
+            colors = ButtonDefaults.buttonColors(
+                containerColor = Color(0xFF595D99),
+                contentColor = Color.White
+            )){
+            Text(text = "Pause")
+        }
+        Button(
+            onClick = {
+                viewModel.checkAnswer(context = context)
+            },
+            modifier = Modifier
+                .padding(8.dp),
+            colors = ButtonDefaults.buttonColors(
+                containerColor = Color(0xFF595D99),
+                contentColor = Color.White
+            )){
+            Text(text = "Check")
+        }
+    }
 }

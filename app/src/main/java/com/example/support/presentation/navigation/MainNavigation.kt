@@ -11,145 +11,173 @@ import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.navigation.NavHostController
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
+import androidx.navigation.compose.currentBackStackEntryAsState
+import com.example.support.presentation.screens.LeaderboardScreen
 import com.example.support.presentation.screens.gameScreens.FirstGameScreen
-import com.example.support.presentation.screens.LoginScreen
+import com.example.support.presentation.screens.authScreens.LoginScreen
 import com.example.support.presentation.screens.MainMenuScreen
 import com.example.support.presentation.screens.ProfileScreen
-import com.example.support.presentation.screens.RatingScreen
-import com.example.support.presentation.screens.RegisterScreen
+import com.example.support.presentation.screens.SeeMoreScreen
+import com.example.support.presentation.screens.authScreens.RegisterScreen
 import com.example.support.presentation.screens.gameScreens.SecondGameScreen
 import com.example.support.presentation.screens.gameScreens.ThirdGameScreen
-import com.example.support.presentation.screens.viewmodel.AuthViewModel
-import com.example.support.presentation.ui.component.BottomNavBar
+import com.example.support.presentation.screens.viewModels.MainMenuViewModel
+import com.example.support.presentation.screens.viewModels.authViewModels.AuthViewModel
+import com.example.support.presentation.ui.component.BottomNavigationBar
 
 @Serializable
-sealed class Screen(val route: String, val title: String) {
+sealed class Screen(val route: String) {
     @Serializable
-    data object Register : Screen("register", "Register")
+    data object Register : Screen("register")
     @Serializable
-    data object Login : Screen("login", "Login")
+    data object Login : Screen("login")
     @Serializable
-    data object FirstGame : Screen("first_game", "First Game")
+    data object FirstGame : Screen("first_game")
     @Serializable
-    data object SecondGame : Screen("second_game", "Second Game")
+    data object SecondGame : Screen("second_game")
     @Serializable
-    data object ThirdGame : Screen("third_game", "Third Game")
+    data object ThirdGame : Screen("third_game")
     @Serializable
-    data object MainMenu : Screen("main_menu", "Main Menu")
+    data object MainMenu : Screen("main_menu")
     @Serializable
-    data object Profile : Screen("profile", "Profile")
+    data object Profile : Screen("profile")
     @Serializable
-    data object Rating : Screen("rating", "Rating")
+    data object SeeMore : Screen("see_more")
+    @Serializable
+    data object Leaderboard : Screen("leaderboard")
 }
 
 @Composable
 fun MainNav(
     modifier: Modifier = Modifier,
-    navHostController: NavHostController,
-    authViewModel: AuthViewModel = hiltViewModel()
+    navHostController: NavHostController ,
+    authViewModel: AuthViewModel = hiltViewModel(),
+    mainMenuViewModel: MainMenuViewModel = hiltViewModel()
 ) {
     val isUserLoggedIn by authViewModel.isUserLoggedIn.collectAsState()
+    val navBackStackEntry by navHostController.currentBackStackEntryAsState()
+    val currentRoute = navBackStackEntry?.destination?.route
 
+    // List of screens where BottomNavigationBar should be displayed
+    val screensWithBottomNav = listOf(
+        Screen.Leaderboard.route,
+        Screen.MainMenu.route,
+        Screen.Profile.route
+    )
 
-    NavHost(
-        modifier = modifier.padding(),
-        navController = navHostController,
-        // startDestination = Screen.Login.route
-        startDestination = if (isUserLoggedIn) Screen.MainMenu.route else Screen.Login.route
-    ) {
-        composable(Screen.Login.route) {
-            LoginScreen(
-                onNavigateTo = { navigateTo ->
-                    navHostController.navigate(navigateTo) {
-                        popUpTo(Screen.Login.route) { inclusive = true }
+    Scaffold(
+        modifier = modifier,
+        bottomBar = {
+            if (currentRoute in screensWithBottomNav) {
+            BottomNavigationBar(navHostController)
+        }}
+    ) { paddingValues ->
+        NavHost(
+            modifier = modifier.padding(paddingValues),
+            navController = navHostController,
+            startDestination = if (isUserLoggedIn) Screen.MainMenu.route else Screen.Login.route
+        ) {
+            composable(Screen.Login.route) {
+                LoginScreen(
+                    onNavigateTo = { navigateTo ->
+                        navHostController.navigate(navigateTo) {
+                            popUpTo(Screen.Login.route) { inclusive = true }
+                        }
+                    },
+                    onExitGame = {
+                        navHostController.navigate(Screen.MainMenu.route) {
+                            popUpTo(Screen.Login.route) { inclusive = true }
+                        }
                     }
-                },
-                onExitGame = {
-                    navHostController.navigate(Screen.MainMenu.route) {
-                        popUpTo(Screen.ThirdGame.route) { inclusive = true }
+                )
+            }
+            composable(Screen.Register.route) {
+                RegisterScreen(
+                    onNavigateTo = { navigateTo ->
+                        navHostController.navigate(navigateTo) {
+                            popUpTo(Screen.Register.route) { inclusive = true }
+                        }
+                    },
+                    onExitGame = {
+                        navHostController.navigate(Screen.MainMenu.route) {
+                            popUpTo(Screen.Register.route) { inclusive = true }
+                        }
                     }
-                }
-            )
-        }
-        composable(Screen.Register.route) {
-            RegisterScreen(
-                onNavigateTo = { navigateTo ->
-                    navHostController.navigate(navigateTo) {
-                        popUpTo(Screen.Register.route) { inclusive = true }
+                )
+            }
+            composable(Screen.FirstGame.route) {
+                FirstGameScreen(
+                    onNavigateTo = { navigateTo ->
+                        navHostController.navigate(navigateTo)
+                    },
+                    onExitGame = {
+                        navHostController.navigate(Screen.MainMenu.route) {
+                            popUpTo(Screen.FirstGame.route) { inclusive = true }
+                        }
                     }
-                },
-                onExitGame = {
-                    navHostController.navigate(Screen.MainMenu.route) {
-                        popUpTo(Screen.ThirdGame.route) { inclusive = true }
+                )
+            }
+            composable(Screen.SecondGame.route) {
+                SecondGameScreen(
+                    onNavigateTo = { navigateTo ->
+                        navHostController.navigate(navigateTo)
+                    },
+                    onExitGame = {
+                        navHostController.navigate(Screen.MainMenu.route) {
+                            popUpTo(Screen.SecondGame.route) { inclusive = true }
+                        }
                     }
-                }
-            )
-        }
-        composable(Screen.FirstGame.route) {
-            FirstGameScreen(
-                onNavigateTo = { navigateTo ->
-                    navHostController.navigate(navigateTo)
-                },
-                onExitGame = {
-                    navHostController.navigate(Screen.MainMenu.route) {
-                        popUpTo(Screen.FirstGame.route) { inclusive = true }
+                )
+            }
+            composable(Screen.ThirdGame.route) {
+                ThirdGameScreen(
+                    onNavigateTo = { navigateTo ->
+                        navHostController.navigate(navigateTo)
+                    },
+                    onExitGame = {
+                        navHostController.navigate(Screen.MainMenu.route) {
+                            popUpTo(Screen.ThirdGame.route) { inclusive = true }
+                        }
                     }
-                }
-            )
-        }
-        composable(Screen.SecondGame.route) {
-            SecondGameScreen(
-                onNavigateTo = { navigateTo ->
-                    navHostController.navigate(navigateTo)
-                },
-                onExitGame = {
-                    navHostController.navigate(Screen.MainMenu.route) {
-                        popUpTo(Screen.SecondGame.route) { inclusive = true }
+                )
+            }
+            composable(Screen.MainMenu.route) {
+                MainMenuScreen(
+                    onNavigateTo = { navigateTo ->
+                        navHostController.navigate(navigateTo)
+                    },
+                    viewModel = mainMenuViewModel
+                )
+            }
+            composable(Screen.Profile.route) {
+                ProfileScreen(
+                    onNavigateTo = { navigateTo ->
+                        navHostController.navigate(navigateTo)
+                    },
+                    onExitGame = {
+                        navHostController.navigate(Screen.MainMenu.route) {
+                            popUpTo(Screen.Profile.route) { inclusive = true }
+                        }
                     }
-                }
-            )
-        }
-        composable(Screen.ThirdGame.route) {
-            ThirdGameScreen(
-                onNavigateTo = { navigateTo ->
-                    navHostController.navigate(navigateTo)
-                },
-                onExitGame = {
-                    navHostController.navigate(Screen.MainMenu.route) {
-                        popUpTo(Screen.ThirdGame.route) { inclusive = true }
-                    }
-                }
-            )
-        }
-        composable(Screen.MainMenu.route) {
-            MainMenuScreen(
-                onNavigateTo = { navigateTo ->
-                    navHostController.navigate(navigateTo) {
-                        popUpTo(Screen.MainMenu.route) {}
-                    }
-                },
-            )
-        }
-        composable(Screen.Profile.route) {
-            ProfileScreen(
-                onNavigateTo = { navigateTo ->
-                    navHostController.navigate(navigateTo)
-                }
-            )
-        }
-        composable(Screen.Rating.route) {
-            RatingScreen(
-                onNavigateTo = { navigateTo ->
-                    navHostController.navigate(navigateTo)
-                },
-                onExitGame = {
-                    navHostController.navigate(Screen.MainMenu.route) {
-                        popUpTo(Screen.ThirdGame.route) { inclusive = true }
-                    }
-                }
-            )
-        }
+                )
+            }
+            composable(Screen.Leaderboard.route) {
+                LeaderboardScreen()
+            }
+            composable(Screen.SeeMore.route) {
+                SeeMoreScreen(
+                    onNavigateTo = { navigateTo ->
+                        navHostController.navigate(navigateTo)
+                    },
+                    onExitGame = {
+                        navHostController.navigate(Screen.MainMenu.route) {
+                            popUpTo(Screen.SeeMore.route) { inclusive = true }
+                        }
+                    },
+                    viewModel=mainMenuViewModel
+                )
 
-
+            }
+        }
     }
 }

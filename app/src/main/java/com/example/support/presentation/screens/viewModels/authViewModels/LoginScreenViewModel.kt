@@ -1,4 +1,4 @@
-package com.example.support.presentation.screens.viewmodel
+package com.example.support.presentation.screens.viewModels.authViewModels
 
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf

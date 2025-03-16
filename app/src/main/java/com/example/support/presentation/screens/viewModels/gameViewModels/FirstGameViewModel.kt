@@ -1,4 +1,4 @@
-package com.example.support.presentation.screens.viewmodel.gameViewModels
+package com.example.support.presentation.screens.viewModels.gameViewModels
 
 import android.content.Context
 import android.os.VibrationEffect
@@ -16,6 +16,10 @@ import com.example.support.data.repository.RatingRepository
 import com.example.support.domain.entity.User
 import com.google.firebase.database.DatabaseReference
 import dagger.hilt.android.lifecycle.HiltViewModel
+import kotlinx.coroutines.Job
+import kotlinx.coroutines.delay
+import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.tasks.await
 
 @HiltViewModel
@@ -44,12 +48,29 @@ class FirstGameViewModel @Inject constructor(
     private val _errorMessage = mutableStateOf<String?>(null)
     val errorMessage: State<String?> = _errorMessage
 
+
+    private val _timeLeft = MutableStateFlow(10) // Use MutableStateFlow for timeLeft
+    val timeLeft: StateFlow<Int> = _timeLeft
+
+    private var timerJob: Job? = null
+
     // Initialize the ViewModel
     init {
         viewModelScope.launch {
             loadUser()
             loadNewQuestion()
             checkAndInsertInitialData()
+        }
+    }
+
+    fun startTimer(onTimeUp: () -> Unit) {
+        timerJob?.cancel()
+        timerJob = viewModelScope.launch {
+            while (_timeLeft.value > 0) {
+                delay(1000L)
+                _timeLeft.value -= 1
+            }
+            onTimeUp()
         }
     }
 
@@ -98,8 +119,10 @@ class FirstGameViewModel @Inject constructor(
         if (normalizedUserAnswer == normalizedCorrectAnswer) {
             updateUserScore()
             loadNewQuestion()
+            _timeLeft.value += 5
         } else {
             vibrateDevice(context)
+            _timeLeft.value -= 2
             _errorMessage.value = "Incorrect answer! Try again."
         }
     }
@@ -139,8 +162,10 @@ class FirstGameViewModel @Inject constructor(
     }
 
     // Resets the game state
-    fun resetGame(){
-        _currentQuestion.value = null
-        _userAnswer.value = ""
+    fun resetGame() {
+        _score.intValue = 0
+        _timeLeft.value = 10
+        loadNewQuestion()
+        startTimer { /* processing when time is up */ }
     }
 }

@@ -1,4 +1,4 @@
-package com.example.support.presentation.screens.viewmodel.gameViewModels
+package com.example.support.presentation.screens.viewModels.gameViewModels
 
 import android.content.Context
 import android.os.VibrationEffect
@@ -8,7 +8,7 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.example.support.data.repository.SecondGameRepository
 import com.example.support.domain.entity.SecondGame
-import kotlinx.coroutines.launch
+import kotlinx.coroutines.*
 import javax.inject.Inject
 import androidx.compose.runtime.*
 import com.example.support.data.repository.AuthRepository
@@ -16,7 +16,10 @@ import com.example.support.data.repository.RatingRepository
 import com.example.support.domain.entity.User
 import com.google.firebase.database.DatabaseReference
 import dagger.hilt.android.lifecycle.HiltViewModel
-import kotlinx.coroutines.tasks.await
+import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.StateFlow
+import kotlin.coroutines.resume
+import kotlin.coroutines.suspendCoroutine
 
 @HiltViewModel
 class SecondGameViewModel @Inject constructor(
@@ -32,16 +35,21 @@ class SecondGameViewModel @Inject constructor(
     private val _currentQuestion = mutableStateOf<SecondGame?>(null)
     val currentQuestion: State<SecondGame?> = _currentQuestion
 
-    private val _score = mutableIntStateOf(0)
+    private val _score = mutableStateOf(0)
     val score: State<Int> = _score
 
-    private val _rank = mutableIntStateOf(0)
+    private val _rank = mutableStateOf(0)
     val rank: State<Int> = _rank
 
     private val _errorMessage = mutableStateOf<String?>(null)
     val errorMessage: State<String?> = _errorMessage
 
-    // Initialize the ViewModel
+    private val _timeLeft = MutableStateFlow(10) // Используем StateFlow
+    val timeLeft: StateFlow<Int> = _timeLeft
+
+
+    private var timerJob: Job? = null
+
     init {
         viewModelScope.launch {
             loadUser()
@@ -50,55 +58,69 @@ class SecondGameViewModel @Inject constructor(
         }
     }
 
-    // Load user data from Firebase
-    private fun loadUser() {
-        val userId = authRepository.getLoggedInUserId() ?: return
-        database.child("users").child(userId).get()
-            .addOnSuccessListener { snapshot ->
-                val user = snapshot.getValue(User::class.java)
-                _user.value = user
-                _score.intValue = user?.score ?: 0
-                _rank.intValue = user?.rank ?: 0
+    fun startTimer(onTimeUp: () -> Unit) {
+        timerJob?.cancel()
+        timerJob = viewModelScope.launch {
+            while (_timeLeft.value > 0) {
+                delay(1000L)
+                _timeLeft.value = _timeLeft.value - 1
             }
-            .addOnFailureListener { exception ->
-                _errorMessage.value = exception.message
-            }
+            onTimeUp()
+        }
     }
 
-    // Loads new question from the repository
+    private suspend fun loadUser() {
+        val userId = authRepository.getLoggedInUserId() ?: return
+        try {
+            val user = suspendCoroutine<User?> { continuation ->
+                database.child("users").child(userId).get()
+                    .addOnSuccessListener { snapshot ->
+                        continuation.resume(snapshot.getValue(User::class.java))
+                    }
+                    .addOnFailureListener { exception ->
+                        _errorMessage.value = exception.message
+                        continuation.resume(null)
+                    }
+            }
+            user?.let {
+                _user.value = it
+                _score.value = it.score ?: 0
+                _rank.value = it.rank ?: 0
+            }
+        } catch (e: Exception) {
+            _errorMessage.value = e.message
+        }
+    }
+
     private fun loadNewQuestion() {
         viewModelScope.launch {
             _currentQuestion.value = repository.getRandomQuestion()
         }
     }
 
-    // Clears the error message
-    fun clearErrorMessage() {
-        _errorMessage.value = null
-    }
-
-    // Checks the user's answer against the correct answer
     fun checkAnswer(userAnswer: String, context: Context) {
         val correctAnswer = _currentQuestion.value?.answer ?: return
 
         if (userAnswer.equals(correctAnswer, ignoreCase = true)) {
             updateUserScore()
+            _timeLeft.value += 5 // добавляем +5 секунд за правильный ответ
         } else {
             vibrateDevice(context)
+            _timeLeft.value -= 2 // убираем -2 секунды за неправильный ответ
         }
+
         loadNewQuestion()
     }
 
-    // Updates the user's score in the database
     private fun updateUserScore() {
         val userId = authRepository.getLoggedInUserId() ?: return
-        val newScore = (_score.intValue + 10)
+        val newScore = _score.value + 10
 
         database.child("users").child(userId).updateChildren(mapOf("score" to newScore))
             .addOnSuccessListener {
+                _score.value = newScore
                 updateUserRanks()
             }
-        _score.intValue = newScore
     }
 
     private fun updateUserRanks() {
@@ -106,23 +128,26 @@ class SecondGameViewModel @Inject constructor(
             ratingRepository.updateUserRanks()
             val userId = authRepository.getLoggedInUserId() ?: return@launch
             val updatedUser = ratingRepository.getUser(userId)
-            _rank.intValue = updatedUser?.rank ?: _rank.intValue
+            _rank.value = updatedUser?.rank ?: _rank.value
         }
     }
 
-
-    // Vibrates the device
     private fun vibrateDevice(context: Context) {
-        val vibrator = context.getSystemService(Context.VIBRATOR_SERVICE) as Vibrator
+        val vibrator = context.getSystemService(Context.VIBRATOR_SERVICE) as? Vibrator ?: return
         if (vibrator.hasVibrator()) {
             val effect = VibrationEffect.createOneShot(300, VibrationEffect.DEFAULT_AMPLITUDE)
             vibrator.vibrate(effect)
         }
     }
 
-    // Resets the game state
-    fun resetGame() {
-        _currentQuestion.value = null
+    fun clearErrorMessage() {
+        _errorMessage.value = null
     }
 
+    fun resetGame() {
+        _score.value = 0
+        _timeLeft.value = 10
+        loadNewQuestion()
+        startTimer { /* обработка окончания игры */ }
+    }
 }

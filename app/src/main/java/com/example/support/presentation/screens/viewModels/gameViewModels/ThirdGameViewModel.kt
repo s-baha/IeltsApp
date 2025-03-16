@@ -1,4 +1,4 @@
-package com.example.support.presentation.screens.viewmodel.gameViewModels
+package com.example.support.presentation.screens.viewModels.gameViewModels
 
 import android.content.Context
 import android.os.VibrationEffect
@@ -16,10 +16,10 @@ import com.example.support.domain.entity.ThirdGame
 import com.example.support.domain.entity.User
 import com.google.firebase.database.DatabaseReference
 import dagger.hilt.android.lifecycle.HiltViewModel
+import kotlinx.coroutines.Job
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
-import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.launch
 import javax.inject.Inject
 
@@ -54,11 +54,27 @@ class ThirdGameViewModel @Inject constructor(
     private val _checkedWords = MutableStateFlow<Map<String, Boolean>?>(null)
     val checkedWords: StateFlow<Map<String, Boolean>?> = _checkedWords
 
+    private val _timeLeft = MutableStateFlow(10) // Используем StateFlow
+    val timeLeft: StateFlow<Int> = _timeLeft
+
+    private var timerJob: Job? = null
+
     // Initialize the ViewModel
     init {
         viewModelScope.launch {
             loadUser()
             repository.insertInitialData()
+        }
+    }
+
+    fun startTimer(onTimeUp: () -> Unit) {
+        timerJob?.cancel()
+        timerJob = viewModelScope.launch {
+            while (_timeLeft.value > 0) {
+                delay(1000L)
+                _timeLeft.value = _timeLeft.value - 1
+            }
+            onTimeUp()
         }
     }
 
@@ -107,6 +123,7 @@ class ThirdGameViewModel @Inject constructor(
                     _checkedWords.value = null // reset checked words
                     _selectedWords.value = emptyList() // clear selected words
                     updateUserScore()
+                    _timeLeft.value += 5
                     loadRandomSentence()
                 }
             }
@@ -114,6 +131,7 @@ class ThirdGameViewModel @Inject constructor(
             selectedWordsLower.any { it in correctAnswers } -> {
                 setErrorMessage("You selected only part of the correct words!")
                 vibrateDevice(context)
+                _timeLeft.value -= 2
                 viewModelScope.launch {
                     delay(1000)
                     _checkedWords.value = null
@@ -195,6 +213,42 @@ class ThirdGameViewModel @Inject constructor(
 
     fun resetGame() {
         _selectedWords.value = emptyList()
+    }
+
+
+    fun extractWordsAndPhrases(text: String, answers: List<String>): List<String> {
+        val wordsAndPhrases = mutableListOf<String>()
+        var remainingText = text
+
+        // sort answers by descending length (so that we search for longer phrases first)
+        val sortedAnswers = answers.sortedByDescending { it.length }
+
+        while (remainingText.isNotEmpty()) {
+            var found = false
+
+            // for each answer, check if it is a prefix of the remaining text
+            for (answer in sortedAnswers) {
+                if (remainingText.startsWith(answer)) {
+                    wordsAndPhrases.add(answer) // add the answer to the list
+                    remainingText = remainingText.removePrefix(answer).trim() // remove the answer from the remaining text
+                    found = true
+                    break
+                }
+            }
+            // if no answer was found, add the first word to the list
+            if (!found) {
+                val firstSpace = remainingText.indexOf(" ") // find the first space in the remaining text
+                if (firstSpace != -1) {
+                    wordsAndPhrases.add(remainingText.substring(0, firstSpace)) // add the first word
+                    remainingText = remainingText.substring(firstSpace).trim() // remove the first word
+                } else {
+                    wordsAndPhrases.add(remainingText) // add the remaining text
+                    break
+                }
+            }
+        }
+
+        return wordsAndPhrases
     }
 
 }

@@ -1,5 +1,6 @@
 package com.example.support.presentation.screens.gameScreens
 
+import android.os.CountDownTimer
 import androidx.activity.compose.BackHandler
 import androidx.compose.foundation.background
 import androidx.compose.foundation.gestures.detectTapGestures
@@ -8,6 +9,7 @@ import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.ExperimentalLayoutApi
 import androidx.compose.foundation.layout.FlowRow
+import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxSize
@@ -23,7 +25,11 @@ import androidx.compose.material3.SnackbarHostState
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.collectAsState
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
@@ -37,7 +43,7 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.hilt.navigation.compose.hiltViewModel
 import com.example.support.presentation.navigation.Screen
-import com.example.support.presentation.screens.viewmodel.gameViewModels.FirstGameViewModel
+import com.example.support.presentation.screens.viewModels.gameViewModels.FirstGameViewModel
 import com.example.support.presentation.ui.component.UserStatsPanel
 
 @Composable
@@ -46,6 +52,7 @@ fun FirstGameScreen(
     onNavigateTo: (Screen) ->Unit,
     onExitGame: () -> Unit
 ){
+
     LaunchedEffect(Unit) {
         viewModel.loadUser()
         viewModel.loadNewQuestion()
@@ -63,7 +70,14 @@ fun FillInTheBlankPage(viewModel: FirstGameViewModel = hiltViewModel(), onExitGa
     val score = viewModel.score.value
     val errorMessage = viewModel.errorMessage.value
     val snackBarHostState = remember { SnackbarHostState() }
+    val context = LocalContext.current
 
+    val timeLeft by viewModel.timeLeft.collectAsState()
+    var showDialog by remember { mutableStateOf(false) }
+
+    LaunchedEffect(key1 = viewModel) {
+        viewModel.startTimer{ showDialog=true }
+    }
     //for error message when entered incorrect answer
     LaunchedEffect(errorMessage) {
         errorMessage?.let {
@@ -90,12 +104,12 @@ fun FillInTheBlankPage(viewModel: FirstGameViewModel = hiltViewModel(), onExitGa
                 snackbarHost = { SnackbarHost(hostState = snackBarHostState) }
             ) {contentPadding ->
                 Column(
+                    horizontalAlignment = Alignment.CenterHorizontally,
                     modifier = Modifier
                         .fillMaxSize()
                         .background(color = Color(0xFF4B4E78))
                         .padding(contentPadding)
-                )
-                {
+                ){
                     // user stats
                     UserStatsPanel(user, score,rank)
                     BackHandler {
@@ -104,6 +118,10 @@ fun FillInTheBlankPage(viewModel: FirstGameViewModel = hiltViewModel(), onExitGa
                     Spacer(modifier = Modifier.fillMaxHeight(0.02f))
                     // name of game
                     GameTexts("Phrasal verbs match up")
+                    Spacer(modifier = Modifier.fillMaxHeight(0.02f))
+                    CircularTimer(timeLeft)
+                    Spacer(modifier = Modifier.fillMaxHeight(0.02f))
+
                     // if question not null, show question
                     question?.let { it ->
                         FillInTheBlank(
@@ -114,6 +132,34 @@ fun FillInTheBlankPage(viewModel: FirstGameViewModel = hiltViewModel(), onExitGa
                                 viewModel.onAnswerChange(it)
                             }
                         )
+                    }
+                    Row (
+                        horizontalArrangement = Arrangement.Center,
+                        modifier = Modifier.fillMaxWidth()
+                    ) {
+
+                        Button(
+                            onClick = { onExitGame()},
+                            modifier = Modifier
+                                .padding(8.dp),
+                            colors = ButtonDefaults.buttonColors(
+                                containerColor = Color(0xFF595D99),
+                                contentColor = Color.White
+                            )){
+                            Text(text = "Pause")
+                        }
+                        Button(
+                            onClick = {
+                                viewModel.checkAnswer(context = context)
+                            },
+                            modifier = Modifier
+                                .padding(8.dp),
+                            colors = ButtonDefaults.buttonColors(
+                                containerColor = Color(0xFF595D99),
+                                contentColor = Color.White
+                            )){
+                            Text(text = "Check")
+                        }
                     }
             }
         }
@@ -129,7 +175,6 @@ fun FillInTheBlank(
     onAnswerChange : (String) ->Unit,
     viewModel: FirstGameViewModel = hiltViewModel()
 ){
-    val context = LocalContext.current
 
     Column(
         horizontalAlignment = Alignment.CenterHorizontally,
@@ -142,7 +187,6 @@ fun FillInTheBlank(
             .background(color = Color(0xFF595D99))
     ) {
         AnswerBlank(text1,text2,userAnswer,onAnswerChange)
-        SubmitButton { viewModel.checkAnswer(context) }
     }
 }
 

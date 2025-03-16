@@ -95,13 +95,12 @@ fun ProfileBox(
             ){
                 Column(modifier = Modifier
                     .fillMaxWidth(0.85f)
-                    .padding(vertical = 24.dp)
+                    .padding(vertical = 20.dp)
                 ) {
-
                     ProfileImage(
                         R.drawable.ic_launcher_foreground
                     )
-                    Spacer(modifier = Modifier.padding(bottom = 20.dp))
+                    Spacer(modifier = Modifier.padding(bottom = 12.dp))
                     Text(username,
                         fontWeight = FontWeight.W600,
                         fontSize = 28.sp,

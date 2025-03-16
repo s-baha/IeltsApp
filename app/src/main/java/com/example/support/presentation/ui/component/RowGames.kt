@@ -12,9 +12,12 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import com.example.support.presentation.navigation.Screen
 
 @Composable
-fun RowGames(){
+fun RowGames(
+    onNavigateTo: (String) -> Unit
+){
     Row (
         horizontalArrangement = Arrangement.SpaceBetween,
         modifier = Modifier
@@ -28,7 +31,9 @@ fun RowGames(){
             fontWeight = FontWeight.W600,
             color = Color.White
         )
-        Button(onClick = {}) {
+        Button(onClick = {
+            onNavigateTo(Screen.SeeMore.route)
+        }) {
             Text("See more")
         }
     }

@@ -21,8 +21,7 @@ class MainActivity : ComponentActivity() {
         super.onCreate(savedInstanceState)
         enableEdgeToEdge()
         setContent {
-           //MainContent()
-            ThirdGameScreen()
+           MainContent()
         }
     }
 }
@@ -30,7 +29,8 @@ class MainActivity : ComponentActivity() {
 @Composable
 fun MainContent(
 ){
-    MainNav(navHostController = rememberNavController())
+    val navController = rememberNavController()
+    MainNav(navHostController = navController)
 }
 
 @Preview(showBackground = true)

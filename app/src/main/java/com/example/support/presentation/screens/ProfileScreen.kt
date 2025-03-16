@@ -8,10 +8,13 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.hilt.navigation.compose.hiltViewModel
 import com.example.support.presentation.navigation.Screen
-import com.example.support.presentation.screens.viewmodel.AuthViewModel
+import com.example.support.presentation.screens.viewModels.authViewModels.AuthViewModel
 
 @Composable
-fun ProfileScreen(onNavigateTo: (String) ->Unit) {
+fun ProfileScreen(
+    onNavigateTo: (String) ->Unit,
+    onExitGame: () -> Unit
+    ) {
     ProfileView(onNavigateTo=onNavigateTo)
 }
 

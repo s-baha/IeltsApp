@@ -12,7 +12,6 @@ class AuthRepository @Inject constructor(
     private val database: DatabaseReference
 ) {
 
-
     fun register(email: String, password: String, username: String, callback: (Boolean, String) -> Unit) {
         firebaseAuth.createUserWithEmailAndPassword(email, password)
             .addOnCompleteListener { task ->
