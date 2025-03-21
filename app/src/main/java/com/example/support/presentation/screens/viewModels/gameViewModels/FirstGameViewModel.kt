@@ -3,6 +3,7 @@ package com.example.support.presentation.screens.viewModels.gameViewModels
 import android.content.Context
 import android.os.VibrationEffect
 import android.os.Vibrator
+import android.util.Log
 import androidx.compose.runtime.mutableStateOf
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
@@ -102,6 +103,7 @@ class FirstGameViewModel @Inject constructor(
                 _currentQuestion.value = question
                 _userAnswer.value = ""
         }
+        Log.d("FirstGameViewModel", "New question loaded: ${_currentQuestion.value}")
     }
 
     // Updates the user's answer

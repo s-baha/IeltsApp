@@ -17,10 +17,11 @@ import com.example.support.presentation.screens.gameScreens.FirstGameScreen
 import com.example.support.presentation.screens.authScreens.LoginScreen
 import com.example.support.presentation.screens.MainMenuScreen
 import com.example.support.presentation.screens.ProfileScreen
-import com.example.support.presentation.screens.SeeMoreScreen
+import com.example.support.presentation.screens.other.SeeMoreScreen
 import com.example.support.presentation.screens.authScreens.RegisterScreen
 import com.example.support.presentation.screens.gameScreens.SecondGameScreen
 import com.example.support.presentation.screens.gameScreens.ThirdGameScreen
+import com.example.support.presentation.screens.other.GameCompleteScreen
 import com.example.support.presentation.screens.viewModels.MainMenuViewModel
 import com.example.support.presentation.screens.viewModels.authViewModels.AuthViewModel
 import com.example.support.presentation.ui.component.BottomNavigationBar
@@ -45,6 +46,8 @@ sealed class Screen(val route: String) {
     data object SeeMore : Screen("see_more")
     @Serializable
     data object Leaderboard : Screen("leaderboard")
+    @Serializable
+    data object GameComplete : Screen("game_complete")
 }
 
 @Composable
@@ -177,6 +180,11 @@ fun MainNav(
                     viewModel=mainMenuViewModel
                 )
 
+            }
+            composable(Screen.GameComplete.route) {
+                GameCompleteScreen(
+                    viewModel = mainMenuViewModel
+                )
             }
         }
     }

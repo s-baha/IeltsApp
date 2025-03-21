@@ -49,7 +49,7 @@ import com.example.support.presentation.ui.component.UserStatsPanel
 @Composable
 fun FirstGameScreen(
     viewModel: FirstGameViewModel = hiltViewModel(),
-    onNavigateTo: (Screen) ->Unit,
+    onNavigateTo: (String) ->Unit,
     onExitGame: () -> Unit
 ){
 
@@ -57,11 +57,19 @@ fun FirstGameScreen(
         viewModel.loadUser()
         viewModel.loadNewQuestion()
     }
-    FillInTheBlankPage(onExitGame=onExitGame)
+    FillInTheBlankPage(
+        onExitGame=onExitGame,
+        onNavigateTo = onNavigateTo,
+        viewModel = viewModel
+    )
 }
 
 @Composable
-fun FillInTheBlankPage(viewModel: FirstGameViewModel = hiltViewModel(), onExitGame: () -> Unit) {
+fun FillInTheBlankPage(
+    viewModel: FirstGameViewModel,
+    onExitGame: () -> Unit,
+    onNavigateTo: (String) -> Unit
+) {
     val keyboardController = LocalSoftwareKeyboardController.current
     val question = viewModel.currentQuestion.value
     val userAnswer = viewModel.userAnswer.value
@@ -139,7 +147,7 @@ fun FillInTheBlankPage(viewModel: FirstGameViewModel = hiltViewModel(), onExitGa
                     ) {
 
                         Button(
-                            onClick = { onExitGame()},
+                            onClick = { onNavigateTo(Screen.GameComplete.route) },
                             modifier = Modifier
                                 .padding(8.dp),
                             colors = ButtonDefaults.buttonColors(

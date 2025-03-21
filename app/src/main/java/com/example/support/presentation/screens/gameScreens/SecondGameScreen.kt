@@ -2,7 +2,6 @@
 
 package com.example.support.presentation.screens.gameScreens
 
-import android.os.CountDownTimer
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.shape.RoundedCornerShape
@@ -26,13 +25,13 @@ import androidx.compose.ui.graphics.drawscope.Stroke
 @Composable
 fun SecondGameScreen(
     viewModel: SecondGameViewModel = hiltViewModel(),
-    onNavigateTo: (Screen) -> Unit,
+    onNavigateTo: (String) -> Unit,
     onExitGame: () -> Unit
 ) {
-    SecondGameScreenContent(viewModel, onExitGame)
+    SecondGameScreenContent(viewModel, onExitGame,onNavigateTo)
 }
 @Composable
-fun SecondGameScreenContent(viewModel: SecondGameViewModel, onExitGame: () -> Unit) {
+fun SecondGameScreenContent(viewModel: SecondGameViewModel, onExitGame: () -> Unit,onNavigateTo: (String) -> Unit) {
     val question = viewModel.currentQuestion.value
     val user = viewModel.user.value?.username ?: "Unknown"
     val score = viewModel.score.value
@@ -85,7 +84,7 @@ fun SecondGameScreenContent(viewModel: SecondGameViewModel, onExitGame: () -> Un
                     modifier = Modifier.fillMaxWidth()
                 ) {
                     Button(
-                        onClick = { onExitGame() },
+                        onClick = { onNavigateTo(Screen.GameComplete.route) },
                         modifier = Modifier.padding(8.dp),
                         colors = ButtonDefaults.buttonColors(
                             containerColor = Color(0xFF595D99),
