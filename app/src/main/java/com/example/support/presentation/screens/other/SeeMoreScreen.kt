@@ -3,7 +3,7 @@ package com.example.support.presentation.screens.other
 import androidx.compose.runtime.Composable
 import androidx.hilt.navigation.compose.hiltViewModel
 import com.example.support.presentation.navigation.Screen
-import com.example.support.presentation.screens.viewModels.MainMenuViewModel
+import com.example.support.presentation.viewModels.MainMenuViewModel
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable

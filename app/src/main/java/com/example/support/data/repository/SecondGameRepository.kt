@@ -8,6 +8,7 @@ import javax.inject.Inject
 import kotlin.coroutines.resume
 import kotlin.coroutines.suspendCoroutine
 
+
 class SecondGameRepository @Inject constructor(
     private val database: DatabaseReference
 ) {

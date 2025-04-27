@@ -36,32 +36,34 @@ import androidx.compose.ui.unit.sp
 import androidx.hilt.navigation.compose.hiltViewModel
 import com.example.support.domain.entity.ThirdGame
 import com.example.support.presentation.navigation.Screen
-import com.example.support.presentation.screens.viewModels.gameViewModels.ThirdGameViewModel
+import com.example.support.presentation.viewModels.gameViewModels.ThirdGameViewModel
 import com.example.support.presentation.ui.component.UserStatsPanel
+// SELECT KEYWORDS
 @Composable
 fun ThirdGameScreen(
     viewModel: ThirdGameViewModel = hiltViewModel(),
     onNavigateTo: (String) ->Unit,
     onExitGame: () -> Unit)
 {
-    ThirdGameScreenContent(viewModel,onNavigateTo)
+    ThirdGameScreenContent(viewModel,onNavigateTo,onResetGame = { viewModel.resetGame() })
 }
 
 @Composable
-fun ThirdGameScreenContent(viewModel: ThirdGameViewModel,onNavigateTo: (String) -> Unit) {
+fun ThirdGameScreenContent(viewModel: ThirdGameViewModel, onNavigateTo: (String) -> Unit, onResetGame: () -> Unit) {
     val user = viewModel.user.value?.username ?: "Unknown"
     val score = viewModel.score.value
     val rank = viewModel.rank.value
     val snackBarHostState = remember { SnackbarHostState() }
     val sentence by viewModel.sentence.collectAsState()
-
-
     val timeLeft by viewModel.timeLeft.collectAsState()
-    var showDialog by remember { mutableStateOf(false) }
 
-    LaunchedEffect(key1 = viewModel) {
-        viewModel.startTimer{ showDialog=true }
+    LaunchedEffect(Unit) {
+        viewModel.startTimer {
+            onResetGame()
+            onNavigateTo("${Screen.GameComplete.route}/third_game") // передай правильный gameType
+        }
     }
+
 
     LaunchedEffect(viewModel.errorMessage.value) {
         viewModel.errorMessage.value?.let {
@@ -102,7 +104,7 @@ fun ThirdGameScreenContent(viewModel: ThirdGameViewModel,onNavigateTo: (String) 
 
 @OptIn(ExperimentalLayoutApi::class)
 @Composable
-fun ChooseKeywords(viewModel: ThirdGameViewModel, sentence: ThirdGame?,onNavigateTo: (String) -> Unit) {
+fun ChooseKeywords(viewModel: ThirdGameViewModel, sentence: ThirdGame?, onNavigateTo: (String) -> Unit) {
     val selectedWords by viewModel.selectedWords.collectAsState()
     val isChecked = viewModel.isChecked.value
     val checkedWords by viewModel.checkedWords.collectAsState()

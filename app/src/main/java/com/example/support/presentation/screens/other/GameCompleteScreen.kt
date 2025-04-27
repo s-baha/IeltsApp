@@ -6,6 +6,8 @@ import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.*
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.collectAsState
+import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
@@ -14,16 +16,20 @@ import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import androidx.compose.ui.tooling.preview.Preview
 import com.example.support.R
-import com.example.support.presentation.screens.viewModels.MainMenuViewModel
+import com.example.support.presentation.navigation.Screen
+import com.example.support.presentation.viewModels.MainMenuViewModel
 
 @Composable
 fun GameCompleteScreen(
-    viewModel: MainMenuViewModel
+    viewModel: MainMenuViewModel,
+    onNavigateTo: (String) -> Unit,
+    onResetGame: () -> Unit,
+    gameType: String
 ) {
-    val score = viewModel.score.value
+    val scoreDifference by viewModel.scoreDifference.collectAsState()
     val rank = viewModel.rank.value
+
 
     Column(
         modifier = Modifier
@@ -68,7 +74,7 @@ fun GameCompleteScreen(
                     modifier = Modifier.size(40.dp)
                 )
                 Text(text = "Points", color = Color.White)
-                Text(text = "$score", color = Color.White, fontWeight = FontWeight.Bold)
+                Text(text = "$scoreDifference", color = Color.White, fontWeight = FontWeight.Bold)
             }
         }
 
@@ -76,7 +82,17 @@ fun GameCompleteScreen(
 
         // Кнопки
         Button(
-            onClick = { /* Начать новую игру */ },
+            onClick = {
+                onResetGame()
+                onNavigateTo(
+                    when (gameType) {
+                        "first_game" -> Screen.FirstGame.route
+                        "second_game" -> Screen.SecondGame.route
+                        "third_game" -> Screen.ThirdGame.route
+                        else -> Screen.FirstGame.route // По умолчанию
+                    }
+                )
+            },
             modifier = Modifier
                 .fillMaxWidth(0.8f)
                 .clip(RoundedCornerShape(16.dp))
@@ -87,7 +103,7 @@ fun GameCompleteScreen(
         Spacer(modifier = Modifier.height(8.dp))
 
         OutlinedButton(
-            onClick = { /* Выйти из игры */ },
+            onClick = { onNavigateTo(Screen.MainMenu.route) },
             modifier = Modifier
                 .fillMaxWidth(0.8f)
                 .clip(RoundedCornerShape(16.dp)),

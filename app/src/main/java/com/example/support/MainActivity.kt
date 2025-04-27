@@ -8,11 +8,8 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.navigation.compose.rememberNavController
 import com.example.support.presentation.navigation.MainNav
-import com.example.support.presentation.screens.MainPage
-import com.example.support.presentation.screens.gameScreens.ThirdGameScreen
+import com.example.support.presentation.screens.gameScreens.FourthGameScreen
 import com.example.support.presentation.theme.SupportTheme
-import com.google.firebase.Firebase
-import com.google.firebase.database.database
 import dagger.hilt.android.AndroidEntryPoint
 
 @AndroidEntryPoint
@@ -29,8 +26,7 @@ class MainActivity : ComponentActivity() {
 @Composable
 fun MainContent(
 ){
-    val navController = rememberNavController()
-    MainNav(navHostController = navController)
+    MainNav(navHostController = rememberNavController())
 }
 
 @Preview(showBackground = true)

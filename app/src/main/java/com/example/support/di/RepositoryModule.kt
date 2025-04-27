@@ -1,6 +1,7 @@
 package com.example.support.di
 import com.example.support.data.repository.AuthRepository
 import com.example.support.data.repository.FirstGameRepository
+import com.example.support.data.repository.FourthGameRepository
 import com.example.support.data.repository.SecondGameRepository
 import com.example.support.data.repository.ThirdGameRepository
 import com.google.firebase.Firebase
@@ -51,4 +52,11 @@ object FirebaseModule {
     fun provideThirdGameRepository(database: DatabaseReference): ThirdGameRepository {
         return ThirdGameRepository(database)
     }
+
+    @Provides
+    @Singleton
+    fun provideFourthGameRepository(database: DatabaseReference): FourthGameRepository {
+        return FourthGameRepository(database)
+    }
+
 }

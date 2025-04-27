@@ -1,4 +1,4 @@
-package com.example.support.presentation.screens.viewModels.gameViewModels
+package com.example.support.presentation.viewModels.gameViewModels
 
 import android.content.Context
 import android.os.VibrationEffect
@@ -7,6 +7,7 @@ import android.util.Log
 import androidx.compose.runtime.State
 import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.simulateHotReload
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.example.support.data.repository.AuthRepository
@@ -54,7 +55,7 @@ class ThirdGameViewModel @Inject constructor(
     private val _checkedWords = MutableStateFlow<Map<String, Boolean>?>(null)
     val checkedWords: StateFlow<Map<String, Boolean>?> = _checkedWords
 
-    private val _timeLeft = MutableStateFlow(10) // Используем StateFlow
+    private val _timeLeft = MutableStateFlow(30) // Используем StateFlow
     val timeLeft: StateFlow<Int> = _timeLeft
 
     private var timerJob: Job? = null
@@ -67,14 +68,14 @@ class ThirdGameViewModel @Inject constructor(
         }
     }
 
-    fun startTimer(onTimeUp: () -> Unit) {
+    fun startTimer(onNavigateToGameComplete: () -> Unit) {
         timerJob?.cancel()
         timerJob = viewModelScope.launch {
             while (_timeLeft.value > 0) {
                 delay(1000L)
                 _timeLeft.value = _timeLeft.value - 1
             }
-            onTimeUp()
+            onNavigateToGameComplete() // Когда таймер заканчивается, переходим на экран завершения
         }
     }
 
@@ -123,7 +124,6 @@ class ThirdGameViewModel @Inject constructor(
                     _checkedWords.value = null // reset checked words
                     _selectedWords.value = emptyList() // clear selected words
                     updateUserScore()
-                    _timeLeft.value += 5
                     loadRandomSentence()
                 }
             }
@@ -131,7 +131,6 @@ class ThirdGameViewModel @Inject constructor(
             selectedWordsLower.any { it in correctAnswers } -> {
                 setErrorMessage("You selected only part of the correct words!")
                 vibrateDevice(context)
-                _timeLeft.value -= 2
                 viewModelScope.launch {
                     delay(1000)
                     _checkedWords.value = null
@@ -212,7 +211,11 @@ class ThirdGameViewModel @Inject constructor(
     }
 
     fun resetGame() {
-        _selectedWords.value = emptyList()
+        _score.intValue = 0
+        _timeLeft.value = 30
+        loadRandomSentence()
+        startTimer { /* processing when time is up */ }
+
     }
 
 

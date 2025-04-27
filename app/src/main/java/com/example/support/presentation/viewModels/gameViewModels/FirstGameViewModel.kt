@@ -1,4 +1,4 @@
-package com.example.support.presentation.screens.viewModels.gameViewModels
+package com.example.support.presentation.viewModels.gameViewModels
 
 import android.content.Context
 import android.os.VibrationEffect
@@ -50,7 +50,7 @@ class FirstGameViewModel @Inject constructor(
     val errorMessage: State<String?> = _errorMessage
 
 
-    private val _timeLeft = MutableStateFlow(10) // Use MutableStateFlow for timeLeft
+    private val _timeLeft = MutableStateFlow(30) // Use MutableStateFlow for timeLeft
     val timeLeft: StateFlow<Int> = _timeLeft
 
     private var timerJob: Job? = null
@@ -64,16 +64,20 @@ class FirstGameViewModel @Inject constructor(
         }
     }
 
-    fun startTimer(onTimeUp: () -> Unit) {
+    fun startTimer(onNavigateToGameComplete: () -> Unit) {
         timerJob?.cancel()
         timerJob = viewModelScope.launch {
             while (_timeLeft.value > 0) {
                 delay(1000L)
-                _timeLeft.value -= 1
+                _timeLeft.value = _timeLeft.value - 1
             }
-            onTimeUp()
+            onNavigateToGameComplete() // Когда таймер заканчивается, переходим на экран завершения
         }
     }
+    fun stopTimer() {
+        timerJob?.cancel()
+    }
+
 
     // Check if initial data exists in the database and insert it if not
     private suspend fun checkAndInsertInitialData() {
@@ -121,10 +125,8 @@ class FirstGameViewModel @Inject constructor(
         if (normalizedUserAnswer == normalizedCorrectAnswer) {
             updateUserScore()
             loadNewQuestion()
-            _timeLeft.value += 5
         } else {
             vibrateDevice(context)
-            _timeLeft.value -= 2
             _errorMessage.value = "Incorrect answer! Try again."
         }
     }
@@ -166,7 +168,7 @@ class FirstGameViewModel @Inject constructor(
     // Resets the game state
     fun resetGame() {
         _score.intValue = 0
-        _timeLeft.value = 10
+        _timeLeft.value = 30
         loadNewQuestion()
         startTimer { /* processing when time is up */ }
     }

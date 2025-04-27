@@ -1,7 +1,7 @@
 @file:Suppress("INFERRED_TYPE_VARIABLE_INTO_EMPTY_INTERSECTION_WARNING")
 
 package com.example.support.presentation.screens.gameScreens
-
+import android.annotation.SuppressLint
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.shape.RoundedCornerShape
@@ -17,35 +17,38 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.hilt.navigation.compose.hiltViewModel
 import com.example.support.presentation.navigation.Screen
-import com.example.support.presentation.screens.viewModels.gameViewModels.SecondGameViewModel
+import com.example.support.presentation.viewModels.gameViewModels.SecondGameViewModel
 import com.example.support.presentation.ui.component.UserStatsPanel
 import androidx.compose.foundation.Canvas
 import androidx.compose.ui.graphics.drawscope.Stroke
-
+// FACT OR OPINION
 @Composable
 fun SecondGameScreen(
     viewModel: SecondGameViewModel = hiltViewModel(),
     onNavigateTo: (String) -> Unit,
-    onExitGame: () -> Unit
+    onExitGame: () -> Unit,
 ) {
-    SecondGameScreenContent(viewModel, onExitGame,onNavigateTo)
+    SecondGameScreenContent(viewModel, onExitGame,onNavigateTo,onResetGame = { viewModel.resetGame() })
 }
+@SuppressLint("UnusedMaterial3ScaffoldPaddingParameter")
 @Composable
-fun SecondGameScreenContent(viewModel: SecondGameViewModel, onExitGame: () -> Unit,onNavigateTo: (String) -> Unit) {
+fun SecondGameScreenContent(viewModel: SecondGameViewModel, onExitGame: () -> Unit, onNavigateTo: (String) -> Unit, onResetGame: () -> Unit) {
     val question = viewModel.currentQuestion.value
     val user = viewModel.user.value?.username ?: "Unknown"
     val score = viewModel.score.value
     val rank = viewModel.rank.value
     val errorMessage = viewModel.errorMessage.value
     val snackBarHostState = remember { SnackbarHostState() }
-    val context = LocalContext.current
-
     val timeLeft by viewModel.timeLeft.collectAsState()
-    var showDialog by remember { mutableStateOf(false) }
 
-    LaunchedEffect(key1 = viewModel) {
-        viewModel.startTimer{ showDialog=true }
+    LaunchedEffect(Unit) {
+        viewModel.startTimer {
+            onResetGame()
+            onNavigateTo("${Screen.GameComplete.route}/second_game") // передай правильный gameType
+        }
     }
+
+
 
     LaunchedEffect(errorMessage) {
         errorMessage?.let {
@@ -61,12 +64,12 @@ fun SecondGameScreenContent(viewModel: SecondGameViewModel, onExitGame: () -> Un
     ) {
         Scaffold(
             snackbarHost = { SnackbarHost(hostState = snackBarHostState) }
-        ) { contentPadding ->
+        ) { _ ->
             Column(
                 modifier = Modifier
                     .fillMaxSize()
                     .background(color = Color(0xFF4B4E78))
-                    .padding(contentPadding),
+                    .padding(),
                 horizontalAlignment = Alignment.CenterHorizontally,
             ) {
                 UserStatsPanel(user, score, rank)
@@ -84,7 +87,7 @@ fun SecondGameScreenContent(viewModel: SecondGameViewModel, onExitGame: () -> Un
                     modifier = Modifier.fillMaxWidth()
                 ) {
                     Button(
-                        onClick = { onNavigateTo(Screen.GameComplete.route) },
+                        onClick = {},
                         modifier = Modifier.padding(8.dp),
                         colors = ButtonDefaults.buttonColors(
                             containerColor = Color(0xFF595D99),
@@ -96,24 +99,6 @@ fun SecondGameScreenContent(viewModel: SecondGameViewModel, onExitGame: () -> Un
                 }
             }
         }
-    }
-
-    if (showDialog) {
-        AlertDialog(
-            onDismissRequest = {},
-            title = { Text("Time's Up!") },
-            text = { Text("The game is over. Do you want to exit and restart?") },
-            confirmButton = {
-                Button(
-                    onClick = {
-                        showDialog = false
-                        onExitGame()
-                    }
-                ) {
-                    Text("Exit and Restart")
-                }
-            }
-        )
     }
 }
 

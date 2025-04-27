@@ -1,4 +1,4 @@
-package com.example.support.presentation.screens.viewModels.gameViewModels
+package com.example.support.presentation.viewModels.gameViewModels
 
 import android.content.Context
 import android.os.VibrationEffect
@@ -44,7 +44,7 @@ class SecondGameViewModel @Inject constructor(
     private val _errorMessage = mutableStateOf<String?>(null)
     val errorMessage: State<String?> = _errorMessage
 
-    private val _timeLeft = MutableStateFlow(10) // Используем StateFlow
+    private val _timeLeft = MutableStateFlow(30) // Use StateFlow
     val timeLeft: StateFlow<Int> = _timeLeft
 
 
@@ -58,16 +58,17 @@ class SecondGameViewModel @Inject constructor(
         }
     }
 
-    fun startTimer(onTimeUp: () -> Unit) {
+    fun startTimer(onNavigateToGameComplete: () -> Unit) {
         timerJob?.cancel()
         timerJob = viewModelScope.launch {
             while (_timeLeft.value > 0) {
                 delay(1000L)
                 _timeLeft.value = _timeLeft.value - 1
             }
-            onTimeUp()
+            onNavigateToGameComplete() // Когда таймер заканчивается, переходим на экран завершения
         }
     }
+
 
     private suspend fun loadUser() {
         val userId = authRepository.getLoggedInUserId() ?: return
@@ -103,10 +104,8 @@ class SecondGameViewModel @Inject constructor(
 
         if (userAnswer.equals(correctAnswer, ignoreCase = true)) {
             updateUserScore()
-            _timeLeft.value += 5 // добавляем +5 секунд за правильный ответ
         } else {
             vibrateDevice(context)
-            _timeLeft.value -= 2 // убираем -2 секунды за неправильный ответ
         }
 
         loadNewQuestion()
@@ -146,7 +145,7 @@ class SecondGameViewModel @Inject constructor(
 
     fun resetGame() {
         _score.value = 0
-        _timeLeft.value = 10
+        _timeLeft.value = 30
         loadNewQuestion()
         startTimer { /* обработка окончания игры */ }
     }

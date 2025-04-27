@@ -12,18 +12,19 @@ import androidx.navigation.NavHostController
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.currentBackStackEntryAsState
-import com.example.support.presentation.screens.LeaderboardScreen
+import com.example.support.presentation.screens.mainScreens.LeaderboardScreen
 import com.example.support.presentation.screens.gameScreens.FirstGameScreen
 import com.example.support.presentation.screens.authScreens.LoginScreen
-import com.example.support.presentation.screens.MainMenuScreen
-import com.example.support.presentation.screens.ProfileScreen
+import com.example.support.presentation.screens.mainScreens.MainMenuScreen
+import com.example.support.presentation.screens.mainScreens.ProfileScreen
 import com.example.support.presentation.screens.other.SeeMoreScreen
 import com.example.support.presentation.screens.authScreens.RegisterScreen
+import com.example.support.presentation.screens.gameScreens.FourthGameScreen
 import com.example.support.presentation.screens.gameScreens.SecondGameScreen
 import com.example.support.presentation.screens.gameScreens.ThirdGameScreen
 import com.example.support.presentation.screens.other.GameCompleteScreen
-import com.example.support.presentation.screens.viewModels.MainMenuViewModel
-import com.example.support.presentation.screens.viewModels.authViewModels.AuthViewModel
+import com.example.support.presentation.viewModels.MainMenuViewModel
+import com.example.support.presentation.viewModels.authViewModels.AuthViewModel
 import com.example.support.presentation.ui.component.BottomNavigationBar
 
 @Serializable
@@ -39,6 +40,8 @@ sealed class Screen(val route: String) {
     @Serializable
     data object ThirdGame : Screen("third_game")
     @Serializable
+    data object FourthGame : Screen("fourth_game")
+    @Serializable
     data object MainMenu : Screen("main_menu")
     @Serializable
     data object Profile : Screen("profile")
@@ -53,7 +56,7 @@ sealed class Screen(val route: String) {
 @Composable
 fun MainNav(
     modifier: Modifier = Modifier,
-    navHostController: NavHostController ,
+    navHostController: NavHostController,
     authViewModel: AuthViewModel = hiltViewModel(),
     mainMenuViewModel: MainMenuViewModel = hiltViewModel()
 ) {
@@ -144,6 +147,18 @@ fun MainNav(
                     }
                 )
             }
+            composable(Screen.FourthGame.route) {
+                FourthGameScreen(
+                    onNavigateTo = { navigateTo ->
+                        navHostController.navigate(navigateTo)
+                    },
+                    onExitGame = {
+                        navHostController.navigate(Screen.MainMenu.route) {
+                            popUpTo(Screen.FourthGame.route) { inclusive = true }
+                        }
+                    }
+                )
+            }
             composable(Screen.MainMenu.route) {
                 MainMenuScreen(
                     onNavigateTo = { navigateTo ->
@@ -181,11 +196,26 @@ fun MainNav(
                 )
 
             }
-            composable(Screen.GameComplete.route) {
+            composable("${Screen.GameComplete.route}/{gameType}") { backStackEntry ->
+                val gameType = backStackEntry.arguments?.getString("gameType") ?: "first_game"
+
                 GameCompleteScreen(
-                    viewModel = mainMenuViewModel
+                    viewModel = mainMenuViewModel,
+                    onNavigateTo = { navHostController.navigate(it) },
+                    onResetGame = {
+                        when (gameType) {
+                            "first_game" -> navHostController.popBackStack(Screen.FirstGame.route, inclusive = true)
+                            "second_game" -> navHostController.popBackStack(Screen.SecondGame.route, inclusive = true)
+                            "third_game" -> navHostController.popBackStack(Screen.ThirdGame.route, inclusive = true)
+                            "fourth_game" -> navHostController.popBackStack(Screen.FourthGame.route, inclusive = true)
+                        }
+                    },
+                    gameType = gameType
                 )
             }
+
+
+
         }
     }
 }

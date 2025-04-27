@@ -39,7 +39,7 @@ import com.example.support.R
 import com.example.support.presentation.navigation.Screen
 import com.example.support.presentation.screens.state.LoginScreenEvent
 import com.example.support.presentation.screens.state.LoginScreenState
-import com.example.support.presentation.screens.viewModels.authViewModels.LoginScreenViewModel
+import com.example.support.presentation.viewModels.authViewModels.LoginScreenViewModel
 import com.example.support.presentation.ui.component.MenuTop
 import com.example.support.presentation.ui.component.StyledButton
 import com.example.support.util.Result

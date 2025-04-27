@@ -40,7 +40,7 @@ import com.example.support.R
 import com.example.support.presentation.navigation.Screen
 import com.example.support.presentation.screens.state.RegisterScreenEvent
 import com.example.support.presentation.screens.state.RegisterScreenState
-import com.example.support.presentation.screens.viewModels.authViewModels.RegisterScreenViewModel
+import com.example.support.presentation.viewModels.authViewModels.RegisterScreenViewModel
 import com.example.support.presentation.ui.component.MenuTop
 import com.example.support.presentation.ui.component.StyledButton
 import com.example.support.util.Result

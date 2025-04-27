@@ -1,4 +1,4 @@
-package com.example.support.presentation.screens.viewModels.authViewModels
+package com.example.support.presentation.viewModels.authViewModels
 
 import androidx.lifecycle.ViewModel
 import com.example.support.data.repository.AuthRepository

@@ -1,4 +1,4 @@
-package com.example.support.presentation.screens
+package com.example.support.presentation.screens.mainScreens
 
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
@@ -8,7 +8,7 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.hilt.navigation.compose.hiltViewModel
 import com.example.support.presentation.navigation.Screen
-import com.example.support.presentation.screens.viewModels.authViewModels.AuthViewModel
+import com.example.support.presentation.viewModels.authViewModels.AuthViewModel
 
 @Composable
 fun ProfileScreen(

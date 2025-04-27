@@ -1,6 +1,6 @@
 package com.example.support.presentation.screens.gameScreens
 
-import android.os.CountDownTimer
+import android.annotation.SuppressLint
 import androidx.activity.compose.BackHandler
 import androidx.compose.foundation.background
 import androidx.compose.foundation.gestures.detectTapGestures
@@ -43,9 +43,9 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.hilt.navigation.compose.hiltViewModel
 import com.example.support.presentation.navigation.Screen
-import com.example.support.presentation.screens.viewModels.gameViewModels.FirstGameViewModel
+import com.example.support.presentation.viewModels.gameViewModels.FirstGameViewModel
 import com.example.support.presentation.ui.component.UserStatsPanel
-
+// PHRASAL VERBS MATCH UP
 @Composable
 fun FirstGameScreen(
     viewModel: FirstGameViewModel = hiltViewModel(),
@@ -60,15 +60,18 @@ fun FirstGameScreen(
     FillInTheBlankPage(
         onExitGame=onExitGame,
         onNavigateTo = onNavigateTo,
-        viewModel = viewModel
+        viewModel = viewModel,
+        onResetGame = { viewModel.resetGame() }
     )
 }
 
+@SuppressLint("UnusedMaterial3ScaffoldPaddingParameter")
 @Composable
 fun FillInTheBlankPage(
     viewModel: FirstGameViewModel,
     onExitGame: () -> Unit,
-    onNavigateTo: (String) -> Unit
+    onNavigateTo: (String) -> Unit,
+    onResetGame: () -> Unit
 ) {
     val keyboardController = LocalSoftwareKeyboardController.current
     val question = viewModel.currentQuestion.value
@@ -81,11 +84,15 @@ fun FillInTheBlankPage(
     val context = LocalContext.current
 
     val timeLeft by viewModel.timeLeft.collectAsState()
-    var showDialog by remember { mutableStateOf(false) }
 
-    LaunchedEffect(key1 = viewModel) {
-        viewModel.startTimer{ showDialog=true }
+    LaunchedEffect(Unit) {
+        viewModel.startTimer {
+            onResetGame()
+            onNavigateTo("${Screen.GameComplete.route}/first_game") // передай правильный gameType
+        }
     }
+
+
     //for error message when entered incorrect answer
     LaunchedEffect(errorMessage) {
         errorMessage?.let {
@@ -110,13 +117,13 @@ fun FillInTheBlankPage(
             //shows snack bar with message
             Scaffold(
                 snackbarHost = { SnackbarHost(hostState = snackBarHostState) }
-            ) {contentPadding ->
+            ) {_ ->
                 Column(
                     horizontalAlignment = Alignment.CenterHorizontally,
                     modifier = Modifier
                         .fillMaxSize()
                         .background(color = Color(0xFF4B4E78))
-                        .padding(contentPadding)
+                        .padding()
                 ){
                     // user stats
                     UserStatsPanel(user, score,rank)
@@ -147,7 +154,7 @@ fun FillInTheBlankPage(
                     ) {
 
                         Button(
-                            onClick = { onNavigateTo(Screen.GameComplete.route) },
+                            onClick = { },
                             modifier = Modifier
                                 .padding(8.dp),
                             colors = ButtonDefaults.buttonColors(
